@@ -31,4 +31,7 @@ executable hagemai
                      , relational-query-HDBC
                      , persistable-record
                      , template-haskell
-                     
+                     , transformers
+  ghc-options:         -Wall                   
+  other-modules:       Issue
+                     , DataSource

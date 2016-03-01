@@ -1,6 +1,4 @@
 {-# LANGUAGE DataKinds             #-}
-{-# LANGUAGE DeriveGeneric         #-}
-{-# LANGUAGE FlexibleInstances     #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings     #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
@@ -9,49 +7,57 @@
 
 module Main where
 
-import           Control.Monad.Trans.Either
+import           Control.Monad.IO.Class     (liftIO)
+import qualified Control.Monad.Trans.Either as E (EitherT, left)
 import           Data.Aeson
 import           Data.Text
+import           Database.HDBC.Record       (runQuery)
+import           Database.Relational.Query
+import           DataSource                 (Connection, connect)
 import           GHC.Generics
+import qualified Issue
 import           Network.Wai
-import           Network.Wai.Handler.Warp
+import           Network.Wai.Handler.Warp   (run)
 import           Servant
 import           Servant.API
 
 type IssueAPI =
-  Get '[JSON] [Issue]
-  :<|> Capture "issueId" Int :> Get '[JSON] Issue
+  Get '[JSON] [Issue.Issue]
+  :<|> Capture "issueId" Int :> Get '[JSON] Issue.Issue
 
 type API = "issues" :> IssueAPI
-
-data Issue = Issue {
-    issueId :: Int
-  , title   :: String
-  , body    :: String
-} deriving (Eq, Show, Generic)
-
-instance ToJSON Issue
 
 api :: Proxy API
 api = Proxy
 
-app :: Application
-app = serve api issuesServer
+app :: Connection -> Application
+app conn = serve api (issuesServer conn)
 
-issuesServer :: Server IssueAPI
-issuesServer = getIssues :<|> showIssue
+issuesServer :: Connection -> Server IssueAPI
+issuesServer conn = getIssues :<|> showIssue
   where
-    getIssues :: EitherT ServantErr IO [Issue]
-    getIssues = return issues
+    getIssues :: E.EitherT ServantErr IO [Issue.Issue]
+    getIssues = liftIO $ runQuery conn (relationalQuery issues) ()
 
-    showIssue :: Int -> EitherT ServantErr IO Issue
-    showIssue issueId' = let fi = Prelude.filter ((== issueId') . issueId) issues in
-      case fi of
-        [] -> left (err404 {errBody = "No issue with given id exists"})
+    showIssue :: Int -> E.EitherT ServantErr IO Issue.Issue
+    showIssue issueId = do
+      r <- liftIO $ runQuery conn (relationalQuery (issue issueId)) ()
+      case r of
+        [] -> E.left (err404 {errBody = "No issue with given id exists"})
         [issue] -> return issue
-        _ -> left (err404 {errBody = "No issue with given id exists"})
+        _ -> E.left (err404 {errBody = "No issue with given id exists"})
 
-issues = [Issue 1 "title1" "body1", Issue 2 "title2" "body2", Issue 3 "title3" "body3"]
+issues :: Relation () Issue.Issue
+issues = relation $ query Issue.issue
+
+issue :: Int -> Relation () Issue.Issue
+issue id = relation $ do
+  i <- query Issue.issue
+  wheres $
+    i ! Issue.id' .=. value (fromIntegral id)
+  return i
 
 main :: IO ()
-main = run 8081 app
+main = do
+  conn <- connect
+  run 8081 $ app conn
