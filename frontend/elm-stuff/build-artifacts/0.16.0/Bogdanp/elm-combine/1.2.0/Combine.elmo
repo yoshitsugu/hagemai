@@ -1,0 +1,246 @@
+Elm.Combine = Elm.Combine || {};
+Elm.Combine.make = function (_elm) {
+   "use strict";
+   _elm.Combine = _elm.Combine || {};
+   if (_elm.Combine.values) return _elm.Combine.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Lazy = Elm.Lazy.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Regex = Elm.Regex.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm);
+   var _op = {};
+   var app = function (p) {    var _p0 = p;if (_p0.ctor === "Parser") {    return _p0._0;} else {    return $Lazy.force(_p0._0);}};
+   var parse = F2(function (p,input) {    return A2(app,p,{input: input,position: 0});});
+   var RecursiveParser = function (a) {    return {ctor: "RecursiveParser",_0: a};};
+   var rec = function (t) {
+      return function (_p1) {
+         return RecursiveParser($Lazy.lazy(_p1));
+      }(function (_p2) {    var _p3 = _p2;return app(t({ctor: "_Tuple0"}));});
+   };
+   var Parser = function (a) {    return {ctor: "Parser",_0: a};};
+   var Fail = function (a) {    return {ctor: "Fail",_0: a};};
+   var andThen = F2(function (p,f) {
+      return Parser(function (cx) {
+         var _p4 = A2(app,p,cx);
+         if (_p4._0.ctor === "Done") {
+               return A2(app,f(_p4._0._0),_p4._1);
+            } else {
+               return {ctor: "_Tuple2",_0: Fail(_p4._0._0),_1: _p4._1};
+            }
+      });
+   });
+   var fail = function (ms) {    return Parser(function (cx) {    return {ctor: "_Tuple2",_0: Fail(ms),_1: cx};});};
+   var or = F2(function (lp,rp) {
+      return Parser(function (cx) {
+         var res = A2(app,lp,cx);
+         var _p5 = res;
+         if (_p5._0.ctor === "Done") {
+               return res;
+            } else {
+               var res$ = A2(app,rp,cx);
+               var _p6 = res$;
+               if (_p6._0.ctor === "Done") {
+                     return res$;
+                  } else {
+                     return {ctor: "_Tuple2",_0: Fail(A2($Basics._op["++"],_p5._0._0,_p6._0._0)),_1: cx};
+                  }
+            }
+      });
+   });
+   var choice = function (xs) {    return A3($List.foldr,or,fail(_U.list([])),xs);};
+   var Done = function (a) {    return {ctor: "Done",_0: a};};
+   var bimap = F3(function (fok,ferr,p) {
+      return Parser(function (cx) {
+         var _p7 = A2(app,p,cx);
+         if (_p7._0.ctor === "Done") {
+               return {ctor: "_Tuple2",_0: Done(fok(_p7._0._0)),_1: _p7._1};
+            } else {
+               return {ctor: "_Tuple2",_0: Fail(ferr(_p7._0._0)),_1: cx};
+            }
+      });
+   });
+   var map = F2(function (f,p) {    return A3(bimap,f,$Basics.identity,p);});
+   var mapError = bimap($Basics.identity);
+   var succeed = function (r) {    return Parser(function (cx) {    return {ctor: "_Tuple2",_0: Done(r),_1: cx};});};
+   var andMap = F2(function (lp,rp) {    return A2(andThen,lp,function (f) {    return A2(andThen,rp,function (x) {    return succeed(f(x));});});});
+   var between = F3(function (lp,rp,p) {
+      return A2(andMap,A2(andMap,A2(map,$Basics.flip(function (_p8) {    return $Basics.always($Basics.always(_p8));}),lp),p),rp);
+   });
+   var optional = F2(function (res,p) {    return A2(or,p,succeed(res));});
+   var skip = function (p) {    return A2(andThen,p,$Basics.always(succeed({ctor: "_Tuple0"})));};
+   var chainl = F2(function (p,op) {
+      var accumulate = function (x) {
+         return A2(or,A2(andThen,op,function (f) {    return A2(andThen,p,function (y) {    return accumulate(A2(f,x,y));});}),succeed(x));
+      };
+      return A2(andThen,p,accumulate);
+   });
+   var chainr = F2(function (p,op) {
+      var accumulate = function (x) {
+         return A2(or,A2(andThen,op,function (f) {    return A2(andThen,A2(andThen,p,accumulate),function (y) {    return succeed(A2(f,x,y));});}),succeed(x));
+      };
+      return A2(andThen,p,accumulate);
+   });
+   var count = F2(function (n,p) {
+      var accumulate = F2(function (x,acc) {
+         return _U.cmp(x,0) < 1 ? succeed($List.reverse(acc)) : A2(andThen,p,function (res) {    return A2(accumulate,x - 1,A2($List._op["::"],res,acc));});
+      });
+      return A2(accumulate,n,_U.list([]));
+   });
+   var string = function (s) {
+      return Parser(function (cx) {
+         if (A2($String.startsWith,s,cx.input)) {
+               var len = $String.length(s);
+               var rem = A2($String.dropLeft,len,cx.input);
+               var pos = cx.position + len;
+               return {ctor: "_Tuple2",_0: Done(s),_1: _U.update(cx,{input: rem,position: pos})};
+            } else return {ctor: "_Tuple2",_0: Fail(_U.list([A2($Basics._op["++"],"expected ",$Basics.toString(s))])),_1: cx};
+      });
+   };
+   var parens = A2(between,string("("),string(")"));
+   var brackets = A2(between,string("{"),string("}"));
+   var squareBrackets = A2(between,string("["),string("]"));
+   var regex = function (pattern) {
+      var pattern$ = A2($String.startsWith,"^",pattern) ? pattern : A2($Basics._op["++"],"^",pattern);
+      return Parser(function (cx) {
+         var _p9 = A3($Regex.find,$Regex.AtMost(1),$Regex.regex(pattern$),cx.input);
+         if (_p9.ctor === "::" && _p9._1.ctor === "[]") {
+               var _p10 = _p9._0;
+               var len = $String.length(_p10.match);
+               var rem = A2($String.dropLeft,len,cx.input);
+               var pos = cx.position + len;
+               return {ctor: "_Tuple2",_0: Done(_p10.match),_1: _U.update(cx,{input: rem,position: pos})};
+            } else {
+               return {ctor: "_Tuple2",_0: Fail(_U.list([A2($Basics._op["++"],"expected input matching Regexp /",A2($Basics._op["++"],pattern$,"/"))])),_1: cx};
+            }
+      });
+   };
+   var $while = function (pred) {
+      var accumulate = F2(function (acc,cx) {
+         accumulate: while (true) {
+            var _p11 = $String.uncons(cx.input);
+            if (_p11.ctor === "Just") {
+                  var _p12 = _p11._0._0;
+                  if (pred(_p12)) {
+                        var pos = cx.position + 1;
+                        var c = A2($String.cons,_p12,"");
+                        var _v8 = A2($Basics._op["++"],acc,c),_v9 = _U.update(cx,{input: _p11._0._1,position: pos});
+                        acc = _v8;
+                        cx = _v9;
+                        continue accumulate;
+                     } else return {ctor: "_Tuple2",_0: acc,_1: cx};
+               } else {
+                  return {ctor: "_Tuple2",_0: acc,_1: cx};
+               }
+         }
+      });
+      return Parser(function (cx) {    var _p13 = A2(accumulate,"",cx);var res = _p13._0;var cx$ = _p13._1;return {ctor: "_Tuple2",_0: Done(res),_1: cx$};});
+   };
+   var end = Parser(function (cx) {
+      return _U.eq(cx.input,"") ? {ctor: "_Tuple2",_0: Done({ctor: "_Tuple0"}),_1: cx} : {ctor: "_Tuple2",_0: Fail(_U.list(["expected end of input"])),_1: cx};
+   });
+   var maybe = function (p) {
+      return Parser(function (cx) {
+         var _p14 = A2(app,p,cx);
+         if (_p14.ctor === "_Tuple2" && _p14._0.ctor === "Done") {
+               return {ctor: "_Tuple2",_0: Done($Maybe.Just(_p14._0._0)),_1: _p14._1};
+            } else {
+               return {ctor: "_Tuple2",_0: Done($Maybe.Nothing),_1: cx};
+            }
+      });
+   };
+   var many = function (p) {
+      var accumulate = F2(function (acc,cx) {
+         accumulate: while (true) {
+            var _p15 = A2(app,p,cx);
+            if (_p15.ctor === "_Tuple2" && _p15._0.ctor === "Done") {
+                  var _v12 = A2($List._op["::"],_p15._0._0,acc),_v13 = _p15._1;
+                  acc = _v12;
+                  cx = _v13;
+                  continue accumulate;
+               } else {
+                  return {ctor: "_Tuple2",_0: $List.reverse(acc),_1: cx};
+               }
+         }
+      });
+      return Parser(function (cx) {
+         var _p16 = A2(accumulate,_U.list([]),cx);
+         var res = _p16._0;
+         var cx$ = _p16._1;
+         return {ctor: "_Tuple2",_0: Done(res),_1: cx$};
+      });
+   };
+   var many1 = function (p) {    return A2(andMap,A2(map,F2(function (x,y) {    return A2($List._op["::"],x,y);}),p),many(p));};
+   var skipMany1 = function (p) {    return A2(andThen,many1(skip(p)),$Basics.always(succeed({ctor: "_Tuple0"})));};
+   var sepBy1 = F2(function (sep,p) {
+      return A2(andMap,A2(map,F2(function (x,y) {    return A2($List._op["::"],x,y);}),p),many(A2(andMap,A2(map,$Basics.flip($Basics.always),sep),p)));
+   });
+   var sepBy = F2(function (sep,p) {    return A2(or,A2(sepBy1,sep,p),succeed(_U.list([])));});
+   var skipMany = function (p) {    return A2(andThen,many(skip(p)),$Basics.always(succeed({ctor: "_Tuple0"})));};
+   var manyTill = F2(function (p,end) {
+      var accumulate = F2(function (acc,cx) {
+         accumulate: while (true) {
+            var _p17 = A2(app,end,cx);
+            if (_p17._0.ctor === "Fail") {
+                  var _p19 = _p17._1;
+                  var _p18 = A2(app,p,_p19);
+                  if (_p18.ctor === "_Tuple2" && _p18._0.ctor === "Done") {
+                        var _v16 = A2($List._op["::"],_p18._0._0,acc),_v17 = _p18._1;
+                        acc = _v16;
+                        cx = _v17;
+                        continue accumulate;
+                     } else {
+                        return {ctor: "_Tuple2",_0: Fail(_p17._0._0),_1: _p19};
+                     }
+               } else {
+                  return {ctor: "_Tuple2",_0: Done($List.reverse(acc)),_1: _p17._1};
+               }
+         }
+      });
+      return Parser(accumulate(_U.list([])));
+   });
+   var Context = F2(function (a,b) {    return {input: a,position: b};});
+   return _elm.Combine.values = {_op: _op
+                                ,parse: parse
+                                ,app: app
+                                ,rec: rec
+                                ,bimap: bimap
+                                ,map: map
+                                ,mapError: mapError
+                                ,andThen: andThen
+                                ,andMap: andMap
+                                ,fail: fail
+                                ,succeed: succeed
+                                ,string: string
+                                ,regex: regex
+                                ,$while: $while
+                                ,end: end
+                                ,or: or
+                                ,choice: choice
+                                ,optional: optional
+                                ,maybe: maybe
+                                ,many: many
+                                ,many1: many1
+                                ,manyTill: manyTill
+                                ,sepBy: sepBy
+                                ,sepBy1: sepBy1
+                                ,skip: skip
+                                ,skipMany: skipMany
+                                ,skipMany1: skipMany1
+                                ,chainl: chainl
+                                ,chainr: chainr
+                                ,count: count
+                                ,between: between
+                                ,parens: parens
+                                ,brackets: brackets
+                                ,squareBrackets: squareBrackets
+                                ,Context: Context
+                                ,Parser: Parser
+                                ,RecursiveParser: RecursiveParser
+                                ,Done: Done
+                                ,Fail: Fail};
+};
