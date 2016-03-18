@@ -8,6 +8,7 @@ module DataSource (
 ) where
 
 import           Data.Int                            (Int32)
+
 import           Database.HDBC.MySQL
 import           Database.HDBC.Query.TH              (defineTableFromDB')
 import           Database.HDBC.Schema.Driver         (typeMap)
@@ -32,3 +33,5 @@ defineTable tableName =
     "hagemai"
     tableName
     [''Show, ''Generic]
+
+

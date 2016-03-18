@@ -19,6 +19,8 @@ executable hagemai
   build-depends:       base >= 4.7 && < 5
                      , servant                               
                      , servant-server
+                     , servant-blaze
+                     , blaze-html
                      , wai
                      , warp
                      , aeson
@@ -32,6 +34,11 @@ executable hagemai
                      , persistable-record
                      , template-haskell
                      , transformers
-  ghc-options:         -Wall                   
+                     , time
+                     , directory
+  ghc-options:         -Wall -threaded              
   other-modules:       Issue
+                     , Comment
                      , DataSource
+                     , IndexPage
+                     

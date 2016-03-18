@@ -21,7 +21,6 @@ extra-deps:
   - relational-query-HDBC-0.4.0.0
   - HDBC-2.4.0.1
   - HDBC-session-0.1.0.0
-
 # Override default flag values for local packages and extra-deps
 flags: {}
 

@@ -1,24 +1,157 @@
 module Main (..) where
 
+import Html exposing (..)
+import Html.Attributes exposing (..)
+import Json.Decode as Json exposing ((:=))
+import Task exposing (..)
+import Effects exposing (Effects, Never)
 import StartApp
-import TransitRouter exposing (WithRoute, getTransition)
+import TransitRouter exposing (..)
 import Routes exposing (..)
+import ServerApi
+import Home
+import TransitStyle
+import IssueList
+import IssueDetail
 
-type Route
-  = Home
-  | Hello
-  | NotFound
-  | EmptyRoute
+type alias Model = WithRoute Routes.Route                                     
+  { homeModel : Home.Model
+  , issueListModel : IssueList.Model
+  , issueDetailModel : IssueDetail.Model}
+
+type Action
+  = NoOp
+  | HomeAction Home.Action
+  | IssueListAction IssueList.Action
+  | IssueDetailAction IssueDetail.Action
+  | RouterAction (TransitRouter.Action Route)
 
 
-routeParsers : List (Mathcer Route)
-routeParsers =
-  [ static Home "/"
-  , static Hello "/hello"
+initialModel : Model
+initialModel =
+  { transitRouter = TransitRouter.empty Routes.EmptyRoute
+  , homeModel = Home.init
+  , issueListModel = IssueList.init
+  , issueDetailModel = IssueDetail.init
+  }
+
+
+actions : Signal Action
+actions =
+  Signal.map RouterAction TransitRouter.actions                         
+
+
+routerConfig : TransitRouter.Config Route Action Model
+routerConfig =                                                          
+  { mountRoute = mountRoute
+  , getDurations = \_ _ _ -> (50, 200)
+  , actionWrapper = RouterAction
+  , routeDecoder = Routes.decode
+  }
+
+mountRoute : Route -> Route -> Model -> (Model, Effects Action)
+mountRoute prevRoute route model =                                      
+  case route of
+    Home ->
+      (model, Effects.none)
+    IssueListPage ->
+      (model, Effects.map IssueListAction (ServerApi.getIssues IssueList.HandleIssuesRetrieved))
+    IssueDetailPage issueId ->
+      (model, Effects.map IssueDetailAction (ServerApi.getIssueAndComments issueId IssueDetail.IssueDetailRetrieved))
+    EmptyRoute ->
+      (model, Effects.none)
+
+init : String -> (Model, Effects Action)
+init path =                                                             
+  TransitRouter.init routerConfig path initialModel
+
+
+update : Action -> Model -> (Model, Effects Action)
+update action model =
+  case action of
+
+    NoOp ->
+      (model, Effects.none)
+
+    HomeAction homeAction ->
+      let (model', effects) = Home.update homeAction model.homeModel
+      in ( { model | homeModel = model' }
+         , Effects.map HomeAction effects )
+
+    IssueListAction act ->                                                       
+      let (model', effects) = IssueList.update act model.issueListModel
+      in ( { model | issueListModel = model' }
+         , Effects.map IssueListAction effects )
+
+    IssueDetailAction act ->                                                       
+      let (model', effects) = IssueDetail.update act model.issueDetailModel
+      in ( { model | issueDetailModel = model' }
+         , Effects.map IssueDetailAction effects )
+
+    RouterAction routeAction ->
+      TransitRouter.update routerConfig routeAction model
+
+
+menu : Signal.Address Action -> Model -> Html
+menu address model =                                                       
+  header [class "navbar navbar-default"] [
+    div [class "container"] [
+        div [class "navbar-header"] [
+          div [ class "navbar-brand" ] [
+            a (linkAttrs Home) [ text "Hagemai" ]
+          ]
+        ]
+      , ul [class "nav navbar-nav"] [
+          li [] [a (linkAttrs IssueListPage) [ text "Issues" ]]       
+      ]
+    ]
   ]
 
 
-type alias Model =
-  WithRoute
-  Routes.Route
-  { foo: String }               
+contentView : Signal.Address Action -> Model -> Html
+contentView address model =                                                
+  case (TransitRouter.getRoute model) of
+    Home ->
+      Home.view (Signal.forwardTo address HomeAction) model.homeModel
+
+    IssueListPage ->                                                   
+      IssueList.view (Signal.forwardTo address IssueListAction) model.issueListModel
+
+    IssueDetailPage issueId ->                                                   
+      IssueDetail.view (Signal.forwardTo address IssueDetailAction) model.issueDetailModel
+      
+    EmptyRoute ->
+      i [class "fa fa-spinner fa-pulse"] []
+
+view : Signal.Address Action -> Model -> Html
+view address model =
+  div [class "container-fluid"] [
+      menu address model
+    , div [ class "content"
+          , style (TransitStyle.fade (getTransition model))]  
+          [contentView address model]
+  ]
+
+
+app : StartApp.App Model
+app =                                          
+  StartApp.start
+    { init = init initialPath
+    , update = update
+    , view = view
+    , inputs = [ actions ]
+    }
+
+
+
+main : Signal Html
+main =                                         
+  app.html
+
+
+
+port tasks : Signal (Task.Task Never ())
+port tasks =                                   
+  app.tasks
+
+port initialPath : String
