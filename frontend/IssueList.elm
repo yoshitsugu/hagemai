@@ -58,5 +58,5 @@ issueRow issue =
     ,td [] [text issue.title]
     ,td [] [priorityToHtml issue.priority]
     ,td [] [text (DateFormat.format "%Y/%m/%d" issue.deadline)]
-    ,td [] [button [ (Routes.clickAttr <| Routes.IssueDetailPage issue.id), class "btn btn-default" ] [text "Detail"]]
+    ,td [] [button [ (Routes.clickAttr <| Routes.IssueDetailPage issue.id), class "btn btn-primary" ] [text "詳細"]]
   ]

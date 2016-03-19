@@ -32,12 +32,15 @@ issues =
 
 issueDecoder : Json.Decoder Issue
 issueDecoder =                                               
-  Json.object5 Issue
+  Json.object8 Issue
     ("id" := Json.int)
+    ("email" := Json.string)
     ("title" := Json.string)
     ("body" := Json.string)
     ("priority" := Json.int)
     ("deadline" := JsonEx.date )
+    ("createdAt" := JsonEx.date )
+    ("updatedAt" := JsonEx.date )
                     
 
 createIssue : IssueForm -> (Maybe Issue -> b) -> Effects.Effects b

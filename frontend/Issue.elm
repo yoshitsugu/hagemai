@@ -7,10 +7,13 @@ import Html.Attributes exposing (..)
 
 type alias Issue =
   { id: Int
+  , email: String
   , title: String
   , body: String
   , priority: Int
   , deadline: Date.Date
+  , createdAt: Date.Date
+  , updatedAAt: Date.Date
   }
 
 type alias IssueForm =

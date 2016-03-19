@@ -12771,7 +12771,7 @@ Elm.Issue.make = function (_elm) {
          default: return $Html.text("");}
    };
    var IssueForm = F2(function (a,b) {    return {ifTitle: a,ifBody: b};});
-   var Issue = F5(function (a,b,c,d,e) {    return {id: a,title: b,body: c,priority: d,deadline: e};});
+   var Issue = F8(function (a,b,c,d,e,f,g,h) {    return {id: a,email: b,title: c,body: d,priority: e,deadline: f,createdAt: g,updatedAAt: h};});
    return _elm.Issue.values = {_op: _op,Issue: Issue,IssueForm: IssueForm,priorityToHtml: priorityToHtml};
 };
 Elm.ServerApi = Elm.ServerApi || {};
@@ -12806,13 +12806,16 @@ Elm.ServerApi.make = function (_elm) {
       $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "ifTitle",_1: $Json$Encode.string(a.ifTitle)}
                                   ,{ctor: "_Tuple2",_0: "ifBody",_1: $Json$Encode.string(a.ifBody)}])));
    };
-   var issueDecoder = A6($Json$Decode.object5,
+   var issueDecoder = A9($Json$Decode.object8,
    $Issue.Issue,
    A2($Json$Decode._op[":="],"id",$Json$Decode.$int),
+   A2($Json$Decode._op[":="],"email",$Json$Decode.string),
    A2($Json$Decode._op[":="],"title",$Json$Decode.string),
    A2($Json$Decode._op[":="],"body",$Json$Decode.string),
    A2($Json$Decode._op[":="],"priority",$Json$Decode.$int),
-   A2($Json$Decode._op[":="],"deadline",$Json$Decode$Extra.date));
+   A2($Json$Decode._op[":="],"deadline",$Json$Decode$Extra.date),
+   A2($Json$Decode._op[":="],"createdAt",$Json$Decode$Extra.date),
+   A2($Json$Decode._op[":="],"updatedAt",$Json$Decode$Extra.date));
    var issueAndComment = A3($Json$Decode.tuple2,
    F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),
    issueDecoder,
@@ -12929,9 +12932,7 @@ Elm.Util.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
    var nl2br = function (str) {
-      return A2($List.intersperse,
-      A2($Html.br,_U.list([]),_U.list([])),
-      A2($List.map,$Html.text,A2($Debug.log,"kore",A3($Regex.split,$Regex.All,$Regex.regex("\r?\n"),str))));
+      return A2($List.intersperse,A2($Html.br,_U.list([]),_U.list([])),A2($List.map,$Html.text,A3($Regex.split,$Regex.All,$Regex.regex("\r?\n"),str)));
    };
    return _elm.Util.values = {_op: _op,nl2br: nl2br};
 };
@@ -12956,38 +12957,58 @@ Elm.IssueDetail.make = function (_elm) {
    $Signal = Elm.Signal.make(_elm),
    $Util = Elm.Util.make(_elm);
    var _op = {};
-   var commentPanel = function (comment) {
+   var commentPanel = function (_p0) {
+      var _p1 = _p0;
+      var _p2 = _p1._1;
+      var ind = $Basics.toString(_p1._0 + 2);
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("panel panel-default")]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("panel-heading")]),
-              _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-envelope-o")]),_U.list([]))
-                      ,$Html.text(A2($Basics._op["++"],comment.email," "))
-                      ,A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-clock-o")]),_U.list([]))
-                      ,$Html.text(A2($Date$Format.format,"%Y/%m/%d %H:%M",comment.createdAt))]))
-              ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),$Util.nl2br(comment.body))]));
+              _U.list([A2($Html.a,_U.list([$Html$Attributes.href(A2($Basics._op["++"],"#",ind))]),_U.list([$Html.text(ind)]))
+                      ,$Html.text(" ")
+                      ,A2($Html.span,
+                      _U.list([$Html$Attributes.title("送信者")]),
+                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-envelope-o")]),_U.list([]))
+                              ,$Html.text(A2($Basics._op["++"],_p2.email," "))]))
+                      ,A2($Html.span,
+                      _U.list([$Html$Attributes.title("送信日時")]),
+                      _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-clock-o")]),_U.list([]))
+                              ,$Html.text(A2($Date$Format.format,"%Y/%m/%d %H:%M",_p2.createdAt))]))]))
+              ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),$Util.nl2br(_p2.body))]));
    };
    var view = F2(function (address,model) {
-      var _p0 = model.issue;
-      if (_p0.ctor === "Just") {
-            var _p1 = _p0._0;
+      var _p3 = model.issue;
+      if (_p3.ctor === "Just") {
+            var _p4 = _p3._0;
             return A2($Html.div,
             _U.list([$Html$Attributes.$class("container")]),
             _U.list([A2($Html.h1,
                     _U.list([]),
-                    _U.list([$Issue.priorityToHtml(_p1.priority)
-                            ,$Html.text(A2($Basics._op["++"]," ",A2($Basics._op["++"],$Basics.toString(_p1.id),A2($Basics._op["++"],":",_p1.title))))]))
+                    _U.list([$Html.text(A2($Basics._op["++"],"#",A2($Basics._op["++"],$Basics.toString(_p4.id),A2($Basics._op["++"],"  ",_p4.title))))]))
                     ,A2($Html.div,
                     _U.list([$Html$Attributes.$class("well well-sm")]),
-                    _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-calendar-o")]),_U.list([]))
-                            ,$Html.text(A2($Date$Format.format,"%Y/%m/%d",_p1.deadline))]))
+                    _U.list([$Issue.priorityToHtml(_p4.priority)
+                            ,A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-calendar-o")]),_U.list([]))
+                            ,$Html.text(A2($Date$Format.format,"%Y/%m/%d",_p4.deadline))]))
                     ,A2($Html.div,
                     _U.list([$Html$Attributes.$class("panel panel-default")]),
                     _U.list([A2($Html.div,
                             _U.list([$Html$Attributes.$class("panel-heading")]),
-                            _U.list([$Html.text(A2($Date$Format.format,"%Y/%m/%d",_p1.deadline))]))
-                            ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),$Util.nl2br(_p1.body))]))
-                    ,A2($Html.div,_U.list([$Html$Attributes.$class("comments")]),A2($List.map,commentPanel,model.comments))]));
+                            _U.list([A2($Html.a,_U.list([$Html$Attributes.href("#1")]),_U.list([$Html.text("1")]))
+                                    ,$Html.text(" ")
+                                    ,A2($Html.span,
+                                    _U.list([$Html$Attributes.title("送信者")]),
+                                    _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-envelope-o")]),_U.list([]))
+                                            ,$Html.text(A2($Basics._op["++"],_p4.email," "))]))
+                                    ,A2($Html.span,
+                                    _U.list([$Html$Attributes.title("送信日時")]),
+                                    _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-clock-o")]),_U.list([]))
+                                            ,$Html.text(A2($Date$Format.format,"%Y/%m/%d %H:%M",_p4.createdAt))]))]))
+                            ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),$Util.nl2br(_p4.body))]))
+                    ,A2($Html.div,
+                    _U.list([$Html$Attributes.$class("comments")]),
+                    A2($List.map,commentPanel,A2($List.indexedMap,F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),model.comments)))]));
          } else {
             return $Html.text("No issue found");
          }
@@ -12995,16 +13016,16 @@ Elm.IssueDetail.make = function (_elm) {
    var Show = function (a) {    return {ctor: "Show",_0: a};};
    var IssueDetailRetrieved = function (a) {    return {ctor: "IssueDetailRetrieved",_0: a};};
    var update = F2(function (action,model) {
-      var _p2 = action;
-      if (_p2.ctor === "IssueDetailRetrieved") {
-            var _p3 = _p2._0;
-            if (_p3.ctor === "Just" && _p3._0.ctor === "_Tuple2") {
-                  return {ctor: "_Tuple2",_0: _U.update(model,{issue: $Maybe.Just(_p3._0._0),comments: _p3._0._1}),_1: $Effects.none};
+      var _p5 = action;
+      if (_p5.ctor === "IssueDetailRetrieved") {
+            var _p6 = _p5._0;
+            if (_p6.ctor === "Just" && _p6._0.ctor === "_Tuple2") {
+                  return {ctor: "_Tuple2",_0: _U.update(model,{issue: $Maybe.Just(_p6._0._0),comments: _p6._0._1}),_1: $Effects.none};
                } else {
                   return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
                }
          } else {
-            return {ctor: "_Tuple2",_0: model,_1: A2($ServerApi.getIssueAndComments,_p2._0,IssueDetailRetrieved)};
+            return {ctor: "_Tuple2",_0: model,_1: A2($ServerApi.getIssueAndComments,_p5._0,IssueDetailRetrieved)};
          }
    });
    var Model = F2(function (a,b) {    return {issue: a,comments: b};});
@@ -13048,8 +13069,8 @@ Elm.IssueList.make = function (_elm) {
               ,A2($Html.td,
               _U.list([]),
               _U.list([A2($Html.button,
-              _U.list([$Routes.clickAttr($Routes.IssueDetailPage(issue.id)),$Html$Attributes.$class("btn btn-default")]),
-              _U.list([$Html.text("Detail")]))]))]));
+              _U.list([$Routes.clickAttr($Routes.IssueDetailPage(issue.id)),$Html$Attributes.$class("btn btn-primary")]),
+              _U.list([$Html.text("詳細")]))]))]));
    };
    var view = F2(function (address,model) {
       return A2($Html.div,
@@ -13242,7 +13263,7 @@ Elm.Main.make = function (_elm) {
               _U.list([A2($Html.li,
               _U.list([]),
               _U.list([A2($Html.a,
-              A2($Basics._op["++"],$Routes.linkAttrs($Routes.NewIssuePage),_U.list([$Html$Attributes.$class("navbar-btn btn btn-primary")])),
+              A2($Basics._op["++"],$Routes.linkAttrs($Routes.NewIssuePage),_U.list([$Html$Attributes.$class("btn btn-info navbar-btn")])),
               _U.list([$Html.text("新規作成")]))]))]))]))]));
    });
    var initialModel = {transitRouter: $TransitRouter.empty($Routes.EmptyRoute)

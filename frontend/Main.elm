@@ -102,7 +102,7 @@ menu address model =
           ]
         ]
       , ul [class "nav navbar-nav"] [
-          li [] [a ((linkAttrs NewIssuePage) ++ [class "navbar-btn btn btn-primary"]) [ text "新規作成" ]]       
+          li [] [a ((linkAttrs NewIssuePage) ++ [class "btn btn-info navbar-btn"]) [ text "新規作成" ]]       
       ]
     ]
   ]
