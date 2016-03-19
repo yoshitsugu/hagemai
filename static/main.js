@@ -12745,26 +12745,6 @@ Elm.Comment.make = function (_elm) {
    var Comment = F3(function (a,b,c) {    return {email: a,body: b,createdAt: c};});
    return _elm.Comment.values = {_op: _op,Comment: Comment};
 };
-Elm.Home = Elm.Home || {};
-Elm.Home.make = function (_elm) {
-   "use strict";
-   _elm.Home = _elm.Home || {};
-   if (_elm.Home.values) return _elm.Home.values;
-   var _U = Elm.Native.Utils.make(_elm),
-   $Basics = Elm.Basics.make(_elm),
-   $Debug = Elm.Debug.make(_elm),
-   $Effects = Elm.Effects.make(_elm),
-   $Html = Elm.Html.make(_elm),
-   $List = Elm.List.make(_elm),
-   $Maybe = Elm.Maybe.make(_elm),
-   $Result = Elm.Result.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
-   var _op = {};
-   var update = F2(function (action,model) {    return {ctor: "_Tuple2",_0: "",_1: $Effects.none};});
-   var view = F2(function (address,model) {    return $Html.text(A2($Basics._op["++"],"hello",model));});
-   var init = "hoge";
-   return _elm.Home.values = {_op: _op,init: init,view: view,update: update};
-};
 Elm.Issue = Elm.Issue || {};
 Elm.Issue.make = function (_elm) {
    "use strict";
@@ -12774,23 +12754,25 @@ Elm.Issue.make = function (_elm) {
    $Basics = Elm.Basics.make(_elm),
    $Date = Elm.Date.make(_elm),
    $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm);
    var _op = {};
-   var priorityToString = function (i) {
+   var priorityToHtml = function (i) {
       var _p0 = i;
       switch (_p0)
-      {case 1: return "緊急";
-         case 2: return "高";
-         case 3: return "中";
-         case 4: return "低";
-         default: return "";}
+      {case 1: return A2($Html.div,_U.list([$Html$Attributes.$class("label label-danger")]),_U.list([$Html.text("緊急")]));
+         case 2: return A2($Html.div,_U.list([$Html$Attributes.$class("label label-warning")]),_U.list([$Html.text("高")]));
+         case 3: return A2($Html.div,_U.list([$Html$Attributes.$class("label label-info")]),_U.list([$Html.text("中")]));
+         case 4: return A2($Html.div,_U.list([$Html$Attributes.$class("label label-default")]),_U.list([$Html.text("低")]));
+         default: return $Html.text("");}
    };
    var IssueForm = F2(function (a,b) {    return {ifTitle: a,ifBody: b};});
    var Issue = F5(function (a,b,c,d,e) {    return {id: a,title: b,body: c,priority: d,deadline: e};});
-   return _elm.Issue.values = {_op: _op,Issue: Issue,IssueForm: IssueForm,priorityToString: priorityToString};
+   return _elm.Issue.values = {_op: _op,Issue: Issue,IssueForm: IssueForm,priorityToHtml: priorityToHtml};
 };
 Elm.ServerApi = Elm.ServerApi || {};
 Elm.ServerApi.make = function (_elm) {
@@ -12891,8 +12873,8 @@ Elm.Routes.make = function (_elm) {
    var encode = function (route) {
       var _p0 = route;
       switch (_p0.ctor)
-      {case "Home": return "/";
-         case "IssueListPage": return "/is";
+      {case "NewIssuePage": return "/new";
+         case "IssueListPage": return "/";
          case "IssueDetailPage": return A2($Basics._op["++"],"/is/",$Basics.toString(_p0._0));
          default: return "";}
    };
@@ -12914,13 +12896,13 @@ Elm.Routes.make = function (_elm) {
    var EmptyRoute = {ctor: "EmptyRoute"};
    var IssueDetailPage = function (a) {    return {ctor: "IssueDetailPage",_0: a};};
    var IssueListPage = {ctor: "IssueListPage"};
-   var Home = {ctor: "Home"};
-   var routeParsers = _U.list([A2($RouteParser.$static,Home,"/")
-                              ,A2($RouteParser.$static,IssueListPage,"/is")
+   var NewIssuePage = {ctor: "NewIssuePage"};
+   var routeParsers = _U.list([A2($RouteParser.$static,NewIssuePage,"/new")
+                              ,A2($RouteParser.$static,IssueListPage,"/")
                               ,A4($RouteParser.dyn1,IssueDetailPage,"/is/",$RouteParser.$int,"")]);
    var decode = function (path) {    return A2($Maybe.withDefault,EmptyRoute,A2($RouteParser.match,routeParsers,path));};
    return _elm.Routes.values = {_op: _op
-                               ,Home: Home
+                               ,NewIssuePage: NewIssuePage
                                ,IssueListPage: IssueListPage
                                ,IssueDetailPage: IssueDetailPage
                                ,EmptyRoute: EmptyRoute
@@ -12930,6 +12912,28 @@ Elm.Routes.make = function (_elm) {
                                ,redirect: redirect
                                ,clickAttr: clickAttr
                                ,linkAttrs: linkAttrs};
+};
+Elm.Util = Elm.Util || {};
+Elm.Util.make = function (_elm) {
+   "use strict";
+   _elm.Util = _elm.Util || {};
+   if (_elm.Util.values) return _elm.Util.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Regex = Elm.Regex.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var nl2br = function (str) {
+      return A2($List.intersperse,
+      A2($Html.br,_U.list([]),_U.list([])),
+      A2($List.map,$Html.text,A2($Debug.log,"kore",A3($Regex.split,$Regex.All,$Regex.regex("\r?\n"),str))));
+   };
+   return _elm.Util.values = {_op: _op,nl2br: nl2br};
 };
 Elm.IssueDetail = Elm.IssueDetail || {};
 Elm.IssueDetail.make = function (_elm) {
@@ -12949,26 +12953,40 @@ Elm.IssueDetail.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $ServerApi = Elm.ServerApi.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
+   $Signal = Elm.Signal.make(_elm),
+   $Util = Elm.Util.make(_elm);
    var _op = {};
    var commentPanel = function (comment) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("panel panel-default")]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("panel-heading")]),
-              _U.list([$Html.text(A2($Basics._op["++"],comment.email,A2($Basics._op["++"],":",A2($Date$Format.format,"%Y/%m/%d %H:%M",comment.createdAt))))]))
-              ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),_U.list([$Html.text(comment.body)]))]));
+              _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-envelope-o")]),_U.list([]))
+                      ,$Html.text(A2($Basics._op["++"],comment.email," "))
+                      ,A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-clock-o")]),_U.list([]))
+                      ,$Html.text(A2($Date$Format.format,"%Y/%m/%d %H:%M",comment.createdAt))]))
+              ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),$Util.nl2br(comment.body))]));
    };
    var view = F2(function (address,model) {
       var _p0 = model.issue;
       if (_p0.ctor === "Just") {
             var _p1 = _p0._0;
             return A2($Html.div,
-            _U.list([$Html$Attributes.$class("container-fluid")]),
-            _U.list([A2($Html.div,
+            _U.list([$Html$Attributes.$class("container")]),
+            _U.list([A2($Html.h1,
+                    _U.list([]),
+                    _U.list([$Issue.priorityToHtml(_p1.priority)
+                            ,$Html.text(A2($Basics._op["++"]," ",A2($Basics._op["++"],$Basics.toString(_p1.id),A2($Basics._op["++"],":",_p1.title))))]))
+                    ,A2($Html.div,
+                    _U.list([$Html$Attributes.$class("well well-sm")]),
+                    _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-calendar-o")]),_U.list([]))
+                            ,$Html.text(A2($Date$Format.format,"%Y/%m/%d",_p1.deadline))]))
+                    ,A2($Html.div,
                     _U.list([$Html$Attributes.$class("panel panel-default")]),
-                    _U.list([A2($Html.div,_U.list([$Html$Attributes.$class("panel-heading")]),_U.list([$Html.text(_p1.title)]))
-                            ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),_U.list([$Html.text(_p1.body)]))]))
+                    _U.list([A2($Html.div,
+                            _U.list([$Html$Attributes.$class("panel-heading")]),
+                            _U.list([$Html.text(A2($Date$Format.format,"%Y/%m/%d",_p1.deadline))]))
+                            ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),$Util.nl2br(_p1.body))]))
                     ,A2($Html.div,_U.list([$Html$Attributes.$class("comments")]),A2($List.map,commentPanel,model.comments))]));
          } else {
             return $Html.text("No issue found");
@@ -13012,7 +13030,6 @@ Elm.IssueList.make = function (_elm) {
    $Effects = Elm.Effects.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
-   $Html$Events = Elm.Html.Events.make(_elm),
    $Issue = Elm.Issue.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
@@ -13026,7 +13043,7 @@ Elm.IssueList.make = function (_elm) {
       _U.list([]),
       _U.list([A2($Html.td,_U.list([]),_U.list([$Html.text($Basics.toString(issue.id))]))
               ,A2($Html.td,_U.list([]),_U.list([$Html.text(issue.title)]))
-              ,A2($Html.td,_U.list([]),_U.list([$Html.text($Issue.priorityToString(issue.priority))]))
+              ,A2($Html.td,_U.list([]),_U.list([$Issue.priorityToHtml(issue.priority)]))
               ,A2($Html.td,_U.list([]),_U.list([$Html.text(A2($Date$Format.format,"%Y/%m/%d",issue.deadline))]))
               ,A2($Html.td,
               _U.list([]),
@@ -13034,76 +13051,69 @@ Elm.IssueList.make = function (_elm) {
               _U.list([$Routes.clickAttr($Routes.IssueDetailPage(issue.id)),$Html$Attributes.$class("btn btn-default")]),
               _U.list([$Html.text("Detail")]))]))]));
    };
-   var HandleSaved = function (a) {    return {ctor: "HandleSaved",_0: a};};
-   var NoOp = {ctor: "NoOp"};
-   var PostIssue = {ctor: "PostIssue"};
-   var SetIssueBody = function (a) {    return {ctor: "SetIssueBody",_0: a};};
-   var SetIssueTitle = function (a) {    return {ctor: "SetIssueTitle",_0: a};};
-   var issueForm = F2(function (address,model) {
-      return A2($Html.form,
-      _U.list([$Html$Attributes.$class("form-horizontal")]),
-      _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Title")]))
-                      ,A2($Html.div,
-                      _U.list([$Html$Attributes.$class("col-sm-10")]),
-                      _U.list([A2($Html.input,
-                      _U.list([$Html$Attributes.$class("form-control")
-                              ,$Html$Attributes.value(model.issueForm.ifTitle)
-                              ,A3($Html$Events.on,
-                              "input",
-                              $Html$Events.targetValue,
-                              function (str) {
-                                 return A2($Signal.message,address,SetIssueTitle(str));
-                              })]),
-                      _U.list([]))]))]))
-              ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Body")]))
-                      ,A2($Html.div,
-                      _U.list([$Html$Attributes.$class("col-sm-10")]),
-                      _U.list([A2($Html.input,
-                      _U.list([$Html$Attributes.$class("form-control")
-                              ,$Html$Attributes.value(model.issueForm.ifBody)
-                              ,A3($Html$Events.on,
-                              "input",
-                              $Html$Events.targetValue,
-                              function (str) {
-                                 return A2($Signal.message,address,SetIssueBody(str));
-                              })]),
-                      _U.list([]))]))]))
-              ,A2($Html.div,
-              _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("col-sm-10 col-sm-offset-2"),A2($Html$Events.onClick,address,PostIssue)]),
-              _U.list([A2($Html.button,_U.list([$Html$Attributes.$class("btn btn-primary btn-block")]),_U.list([$Html.text("Submit")]))]))]))]));
-   });
    var view = F2(function (address,model) {
       return A2($Html.div,
-      _U.list([$Html$Attributes.$class("container-fluid")]),
-      _U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Create Issue")]))
-              ,A2(issueForm,address,model)
-              ,A2($Html.h1,_U.list([]),_U.list([$Html.text("Issues")]))
-              ,A2($Html.table,
-              _U.list([$Html$Attributes.$class("table table-striped")]),
-              _U.list([A2($Html.thead,
-                      _U.list([]),
-                      _U.list([A2($Html.tr,
-                      _U.list([]),
-                      _U.list([A2($Html.th,_U.list([]),_U.list([$Html.text("Id")]))
-                              ,A2($Html.th,_U.list([]),_U.list([$Html.text("Name")]))
-                              ,A2($Html.th,_U.list([]),_U.list([$Html.text("Priority")]))
-                              ,A2($Html.th,_U.list([]),_U.list([$Html.text("deadline")]))
-                              ,A2($Html.th,_U.list([]),_U.list([]))]))]))
-                      ,A2($Html.tbody,_U.list([]),A2($List.map,issueRow,model.issues))]))]));
+      _U.list([$Html$Attributes.$class("container")]),
+      _U.list([A2($Html.table,
+      _U.list([$Html$Attributes.$class("table table-striped table-hover")]),
+      _U.list([A2($Html.thead,
+              _U.list([]),
+              _U.list([A2($Html.tr,
+              _U.list([]),
+              _U.list([A2($Html.th,_U.list([]),_U.list([$Html.text("ID")]))
+                      ,A2($Html.th,_U.list([]),_U.list([$Html.text("タイトル")]))
+                      ,A2($Html.th,_U.list([]),_U.list([$Html.text("優先度")]))
+                      ,A2($Html.th,_U.list([]),_U.list([$Html.text("締切")]))
+                      ,A2($Html.th,_U.list([]),_U.list([]))]))]))
+              ,A2($Html.tbody,_U.list([]),A2($List.map,issueRow,model.issues))]))]));
    });
    var HandleIssuesRetrieved = function (a) {    return {ctor: "HandleIssuesRetrieved",_0: a};};
    var update = F2(function (action,model) {
       var _p0 = action;
+      if (_p0.ctor === "Show") {
+            return {ctor: "_Tuple2",_0: model,_1: $ServerApi.getIssues(HandleIssuesRetrieved)};
+         } else {
+            return {ctor: "_Tuple2",_0: _U.update(model,{issues: A2($Maybe.withDefault,_U.list([]),_p0._0)}),_1: $Effects.none};
+         }
+   });
+   var Show = {ctor: "Show"};
+   var Model = function (a) {    return {issues: a};};
+   var init = Model(_U.list([]));
+   return _elm.IssueList.values = {_op: _op
+                                  ,Model: Model
+                                  ,Show: Show
+                                  ,HandleIssuesRetrieved: HandleIssuesRetrieved
+                                  ,init: init
+                                  ,update: update
+                                  ,view: view
+                                  ,issueRow: issueRow};
+};
+Elm.NewIssue = Elm.NewIssue || {};
+Elm.NewIssue.make = function (_elm) {
+   "use strict";
+   _elm.NewIssue = _elm.NewIssue || {};
+   if (_elm.NewIssue.values) return _elm.NewIssue.values;
+   var _U = Elm.Native.Utils.make(_elm),
+   $Basics = Elm.Basics.make(_elm),
+   $Debug = Elm.Debug.make(_elm),
+   $Effects = Elm.Effects.make(_elm),
+   $Html = Elm.Html.make(_elm),
+   $Html$Attributes = Elm.Html.Attributes.make(_elm),
+   $Html$Events = Elm.Html.Events.make(_elm),
+   $Issue = Elm.Issue.make(_elm),
+   $List = Elm.List.make(_elm),
+   $Maybe = Elm.Maybe.make(_elm),
+   $Result = Elm.Result.make(_elm),
+   $Routes = Elm.Routes.make(_elm),
+   $ServerApi = Elm.ServerApi.make(_elm),
+   $Signal = Elm.Signal.make(_elm);
+   var _op = {};
+   var NoOp = {ctor: "NoOp"};
+   var HandleSaved = function (a) {    return {ctor: "HandleSaved",_0: a};};
+   var update = F2(function (action,model) {
+      var _p0 = action;
       switch (_p0.ctor)
       {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-         case "Show": return {ctor: "_Tuple2",_0: model,_1: $ServerApi.getIssues(HandleIssuesRetrieved)};
-         case "HandleIssuesRetrieved": return {ctor: "_Tuple2",_0: _U.update(model,{issues: A2($Maybe.withDefault,_U.list([]),_p0._0)}),_1: $Effects.none};
          case "SetIssueTitle": return {ctor: "_Tuple2",_0: _U.update(model,{issueForm: {ifTitle: _p0._0,ifBody: model.issueForm.ifBody}}),_1: $Effects.none};
          case "SetIssueBody": return {ctor: "_Tuple2",_0: _U.update(model,{issueForm: {ifBody: _p0._0,ifTitle: model.issueForm.ifTitle}}),_1: $Effects.none};
          case "PostIssue": return {ctor: "_Tuple2"
@@ -13119,23 +13129,73 @@ Elm.IssueList.make = function (_elm) {
                  return {ctor: "_Tuple2",_0: model,_1: A2($Effects.map,function (_p4) {    return NoOp;},$Routes.redirect($Routes.IssueListPage))};
               }}
    });
-   var Show = {ctor: "Show"};
-   var Model = F2(function (a,b) {    return {issues: a,issueForm: b};});
-   var init = A2(Model,_U.list([]),{ifTitle: "",ifBody: ""});
-   return _elm.IssueList.values = {_op: _op
-                                  ,Model: Model
-                                  ,Show: Show
-                                  ,HandleIssuesRetrieved: HandleIssuesRetrieved
-                                  ,SetIssueTitle: SetIssueTitle
-                                  ,SetIssueBody: SetIssueBody
-                                  ,PostIssue: PostIssue
-                                  ,NoOp: NoOp
-                                  ,HandleSaved: HandleSaved
-                                  ,init: init
-                                  ,update: update
-                                  ,view: view
-                                  ,issueRow: issueRow
-                                  ,issueForm: issueForm};
+   var SetIssueBody = function (a) {    return {ctor: "SetIssueBody",_0: a};};
+   var SetIssueTitle = function (a) {    return {ctor: "SetIssueTitle",_0: a};};
+   var PostIssue = {ctor: "PostIssue"};
+   var issueForm = F2(function (address,model) {
+      return A2($Html.form,
+      _U.list([$Html$Attributes.$class("form-horizontal")]),
+      _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("form-group")]),
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Title")]))
+                      ,A2($Html.div,
+                      _U.list([$Html$Attributes.$class("col-sm-10")]),
+                      _U.list([A2($Html.input,
+                      _U.list([$Html$Attributes.$class("form-control")
+                              ,$Html$Attributes.value("")
+                              ,A3($Html$Events.on,
+                              "input",
+                              $Html$Events.targetValue,
+                              function (str) {
+                                 return A2($Signal.message,address,SetIssueTitle(str));
+                              })]),
+                      _U.list([]))]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("form-group")]),
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Body")]))
+                      ,A2($Html.div,
+                      _U.list([$Html$Attributes.$class("col-sm-10")]),
+                      _U.list([A2($Html.textarea,
+                      _U.list([$Html$Attributes.$class("form-control")
+                              ,$Html$Attributes.value("")
+                              ,$Html$Attributes.rows(10)
+                              ,A3($Html$Events.on,
+                              "input",
+                              $Html$Events.targetValue,
+                              function (str) {
+                                 return A2($Signal.message,address,SetIssueBody(str));
+                              })]),
+                      _U.list([]))]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("form-group")]),
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Deadline")]))
+                      ,A2($Html.div,
+                      _U.list([$Html$Attributes.$class("col-sm-10")]),
+                      _U.list([A2($Html.input,_U.list([$Html$Attributes.$class("form-control"),$Html$Attributes.type$("date")]),_U.list([]))]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("form-group")]),
+              _U.list([A2($Html.div,
+              _U.list([$Html$Attributes.$class("col-sm-10 col-sm-offset-2"),A2($Html$Events.onClick,address,PostIssue)]),
+              _U.list([A2($Html.button,_U.list([$Html$Attributes.$class("btn btn-primary btn-block")]),_U.list([$Html.text("Submit")]))]))]))]));
+   });
+   var view = F2(function (address,model) {
+      return A2($Html.div,
+      _U.list([$Html$Attributes.$class("container")]),
+      _U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Create Issue")])),A2(issueForm,address,model)]));
+   });
+   var Model = function (a) {    return {issueForm: a};};
+   var init = Model({ifTitle: "",ifBody: ""});
+   return _elm.NewIssue.values = {_op: _op
+                                 ,Model: Model
+                                 ,init: init
+                                 ,PostIssue: PostIssue
+                                 ,SetIssueTitle: SetIssueTitle
+                                 ,SetIssueBody: SetIssueBody
+                                 ,HandleSaved: HandleSaved
+                                 ,NoOp: NoOp
+                                 ,update: update
+                                 ,view: view
+                                 ,issueForm: issueForm};
 };
 Elm.Main = Elm.Main || {};
 Elm.Main.make = function (_elm) {
@@ -13146,13 +13206,13 @@ Elm.Main.make = function (_elm) {
    $Basics = Elm.Basics.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
-   $Home = Elm.Home.make(_elm),
    $Html = Elm.Html.make(_elm),
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $IssueDetail = Elm.IssueDetail.make(_elm),
    $IssueList = Elm.IssueList.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
+   $NewIssue = Elm.NewIssue.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Routes = Elm.Routes.make(_elm),
    $ServerApi = Elm.ServerApi.make(_elm),
@@ -13169,20 +13229,24 @@ Elm.Main.make = function (_elm) {
    });
    var menu = F2(function (address,model) {
       return A2($Html.header,
-      _U.list([$Html$Attributes.$class("navbar navbar-default")]),
+      _U.list([$Html$Attributes.$class("navbar navbar-default navbar-static-top")]),
       _U.list([A2($Html.div,
       _U.list([$Html$Attributes.$class("container")]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("navbar-header")]),
               _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("navbar-brand")]),
-              _U.list([A2($Html.a,$Routes.linkAttrs($Routes.Home),_U.list([$Html.text("Hagemai")]))]))]))
+              _U.list([A2($Html.a,$Routes.linkAttrs($Routes.IssueListPage),_U.list([$Html.text("Hagemai")]))]))]))
               ,A2($Html.ul,
               _U.list([$Html$Attributes.$class("nav navbar-nav")]),
-              _U.list([A2($Html.li,_U.list([]),_U.list([A2($Html.a,$Routes.linkAttrs($Routes.IssueListPage),_U.list([$Html.text("Issues")]))]))]))]))]));
+              _U.list([A2($Html.li,
+              _U.list([]),
+              _U.list([A2($Html.a,
+              A2($Basics._op["++"],$Routes.linkAttrs($Routes.NewIssuePage),_U.list([$Html$Attributes.$class("navbar-btn btn btn-primary")])),
+              _U.list([$Html.text("新規作成")]))]))]))]))]));
    });
    var initialModel = {transitRouter: $TransitRouter.empty($Routes.EmptyRoute)
-                      ,homeModel: $Home.init
+                      ,newIssueModel: $NewIssue.init
                       ,issueListModel: $IssueList.init
                       ,issueDetailModel: $IssueDetail.init};
    var RouterAction = function (a) {    return {ctor: "RouterAction",_0: a};};
@@ -13192,7 +13256,7 @@ Elm.Main.make = function (_elm) {
    var mountRoute = F3(function (prevRoute,route,model) {
       var _p0 = route;
       switch (_p0.ctor)
-      {case "Home": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
+      {case "NewIssuePage": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
          case "IssueListPage": return {ctor: "_Tuple2",_0: model,_1: A2($Effects.map,IssueListAction,$ServerApi.getIssues($IssueList.HandleIssuesRetrieved))};
          case "IssueDetailPage": return {ctor: "_Tuple2"
                                         ,_0: model
@@ -13204,15 +13268,15 @@ Elm.Main.make = function (_elm) {
                       ,actionWrapper: RouterAction
                       ,routeDecoder: $Routes.decode};
    var init = function (path) {    return A3($TransitRouter.init,routerConfig,path,initialModel);};
-   var HomeAction = function (a) {    return {ctor: "HomeAction",_0: a};};
+   var NewIssueAction = function (a) {    return {ctor: "NewIssueAction",_0: a};};
    var update = F2(function (action,model) {
       var _p4 = action;
       switch (_p4.ctor)
       {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-         case "HomeAction": var _p5 = A2($Home.update,_p4._0,model.homeModel);
+         case "NewIssueAction": var _p5 = A2($NewIssue.update,_p4._0,model.newIssueModel);
            var model$ = _p5._0;
            var effects = _p5._1;
-           return {ctor: "_Tuple2",_0: _U.update(model,{homeModel: model$}),_1: A2($Effects.map,HomeAction,effects)};
+           return {ctor: "_Tuple2",_0: _U.update(model,{newIssueModel: model$}),_1: A2($Effects.map,NewIssueAction,effects)};
          case "IssueListAction": var _p6 = A2($IssueList.update,_p4._0,model.issueListModel);
            var model$ = _p6._0;
            var effects = _p6._1;
@@ -13226,14 +13290,18 @@ Elm.Main.make = function (_elm) {
    var contentView = F2(function (address,model) {
       var _p8 = $TransitRouter.getRoute(model);
       switch (_p8.ctor)
-      {case "Home": return A2($Home.view,A2($Signal.forwardTo,address,HomeAction),model.homeModel);
+      {case "NewIssuePage": return A2($NewIssue.view,A2($Signal.forwardTo,address,NewIssueAction),model.newIssueModel);
          case "IssueListPage": return A2($IssueList.view,A2($Signal.forwardTo,address,IssueListAction),model.issueListModel);
          case "IssueDetailPage": return A2($IssueDetail.view,A2($Signal.forwardTo,address,IssueDetailAction),model.issueDetailModel);
-         default: return A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-spinner fa-pulse")]),_U.list([]));}
+         default: return A2($Html.div,
+           _U.list([$Html$Attributes.style(_U.list([{ctor: "_Tuple2",_0: "text-align",_1: "center"}
+                                                   ,{ctor: "_Tuple2",_0: "padding",_1: "40px"}
+                                                   ,{ctor: "_Tuple2",_0: "width",_1: "100%"}]))]),
+           _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-spinner fa-pulse fa-5x fa-fw")]),_U.list([]))]));}
    });
    var view = F2(function (address,model) {
       return A2($Html.div,
-      _U.list([$Html$Attributes.$class("container-fluid")]),
+      _U.list([$Html$Attributes.$class("wrapper")]),
       _U.list([A2(menu,address,model)
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("content"),$Html$Attributes.style($TransitStyle.fade($TransitRouter.getTransition(model)))]),
@@ -13245,7 +13313,7 @@ Elm.Main.make = function (_elm) {
    var NoOp = {ctor: "NoOp"};
    return _elm.Main.values = {_op: _op
                              ,NoOp: NoOp
-                             ,HomeAction: HomeAction
+                             ,NewIssueAction: NewIssueAction
                              ,IssueListAction: IssueListAction
                              ,IssueDetailAction: IssueDetailAction
                              ,RouterAction: RouterAction

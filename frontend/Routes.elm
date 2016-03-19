@@ -11,15 +11,15 @@ import RouteParser exposing (..)
 import Debug exposing (log)
 
 type Route
-  = Home
+  = NewIssuePage
   | IssueListPage
   | IssueDetailPage Int
   | EmptyRoute
 
 routeParsers : List (Matcher Route)
 routeParsers =
-  [ static Home "/"
-  , static IssueListPage "/is"
+  [ static NewIssuePage "/new"
+  , static IssueListPage "/"
   , dyn1 IssueDetailPage "/is/" int ""
   ]
 
@@ -31,8 +31,8 @@ decode path =
 encode : Route -> String
 encode route =
   case route of
-    Home -> "/"
-    IssueListPage   -> "/is"
+    NewIssuePage -> "/new"
+    IssueListPage   -> "/"
     IssueDetailPage i -> "/is/" ++ toString i
     EmptyRoute -> ""
 

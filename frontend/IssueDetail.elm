@@ -10,6 +10,7 @@ import Date
 import Date.Format as DateFormat
 import Issue exposing (..)
 import Comment exposing (..)
+import Util exposing (..)
 
 type alias Model =
      { issue : Maybe Issue, comments : List Comment }
@@ -35,11 +36,16 @@ update action model =
 view : Signal.Address Action -> Model -> Html
 view address model =
   case model.issue of
-    Just is -> div [class "container-fluid"] [
-                   div [class "panel panel-default"] 
-                       [ div [class "panel-heading"] [text is.title]
-                       , div [class "panel-body"] [ text is.body ]
-                       ]
+    Just is -> div [class "container"] [
+                   h1 [] [priorityToHtml is.priority, text (" " ++ (toString is.id) ++ ":" ++ is.title)]
+                 , div [class "well well-sm"]
+                         [ i [class "fa fa-fw fa-calendar-o"] []
+                         , text (DateFormat.format "%Y/%m/%d" is.deadline)
+                         ]
+                 , div [class "panel panel-default"] 
+                     [ div [class "panel-heading"] [text (DateFormat.format "%Y/%m/%d" is.deadline)]
+                     , div [class "panel-body"] (nl2br is.body)
+                     ]
                  , div [class "comments"] (List.map commentPanel model.comments)
                ]
     Nothing -> text "No issue found"
@@ -47,8 +53,13 @@ view address model =
 commentPanel : Comment -> Html
 commentPanel comment =
   div [class "panel panel-default"] [
-       div [class "panel-heading"] [text (comment.email ++ ":" ++ (DateFormat.format "%Y/%m/%d %H:%M" comment.createdAt))]
+       div [class "panel-heading"]
+           [ i [class "fa fa-fw fa-envelope-o"] []
+           , text (comment.email ++ " ")
+           , i [class "fa fa-fw fa-clock-o"] []
+           , text (DateFormat.format "%Y/%m/%d %H:%M" comment.createdAt)
+           ]
      , div
        [class "panel-body"]
-       [text comment.body]
+       (nl2br comment.body)
      ]  

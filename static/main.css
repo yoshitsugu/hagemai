@@ -1,0 +1,35 @@
+/*
+Error: Invalid CSS after "body {": expected "}", was ""
+        on line 2 of main.scss
+
+1: body {
+
+Backtrace:
+main.scss:2
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/scss/parser.rb:1179:in `expected'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/scss/parser.rb:1115:in `expected'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/scss/parser.rb:1110:in `tok!'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/scss/parser.rb:656:in `block'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/scss/parser.rb:647:in `ruleset'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/scss/parser.rb:673:in `block_child'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/scss/parser.rb:663:in `block_contents'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/scss/parser.rb:123:in `stylesheet'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/scss/parser.rb:39:in `parse'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/engine.rb:403:in `_to_tree'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/engine.rb:378:in `_render_with_sourcemap'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/engine.rb:295:in `render_with_sourcemap'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/plugin/compiler.rb:490:in `update_stylesheet'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/plugin/compiler.rb:215:in `block in update_stylesheets'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/plugin/compiler.rb:209:in `each'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/plugin/compiler.rb:209:in `update_stylesheets'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/plugin/compiler.rb:471:in `on_file_changed'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/lib/sass/plugin/compiler.rb:328:in `block in watch'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/vendor/listen/lib/listen/listener.rb:252:in `on_change'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/vendor/listen/lib/listen/listener.rb:290:in `block in initialize_adapter'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/vendor/listen/lib/listen/adapters/polling.rb:48:in `poll_changed_directories'
+/Users/yoshitsugu/.rbenv/versions/2.3.0/lib/ruby/gems/2.3.0/gems/sass-3.4.21/vendor/listen/lib/listen/adapter.rb:299:in `block in start_poller'
+*/
+body:before {
+  white-space: pre;
+  font-family: monospace;
+  content: "Error: Invalid CSS after \"body {\": expected \"}\", was \"\"\A         on line 2 of main.scss\A \A 1: body {"; }

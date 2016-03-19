@@ -21,7 +21,7 @@ instance ToMarkup IndexPage where
           meta ! httpEquiv "expires" ! content "Tue, 01 Jan 1980 1:00:00 GMT"
           meta ! httpEquiv "pragma" ! content "no-cache"
           H.title "Hagemai"
-          link ! rel "stylesheet" ! href "https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"
+          link ! rel "stylesheet" ! href "/assets/bootstrap.min.css"
           link ! rel "stylesheet" ! href "https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css"
       body $ do
           script ! type_ "text/javascript" ! src "/assets/main.js" $ mempty

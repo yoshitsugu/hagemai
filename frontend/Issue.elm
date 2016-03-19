@@ -1,6 +1,8 @@
 module Issue where
-import Date
 
+import Date
+import Html exposing (..)
+import Html.Attributes exposing (..)
 
 
 type alias Issue =
@@ -16,12 +18,12 @@ type alias IssueForm =
   , ifBody : String
   }
 
-priorityToString : Int -> String
-priorityToString i
+priorityToHtml : Int -> Html
+priorityToHtml i
   = case i of
-      1 -> "緊急"
-      2 -> "高"
-      3 -> "中"
-      4 -> "低"
-      _ -> ""
+      1 -> div [class "label label-danger"] [text "緊急"]
+      2 -> div [class "label label-warning"] [text "高"]
+      3 -> div [class "label label-info"] [text "中"]
+      4 -> div [class "label label-default"] [text "低"]
+      _ -> text ""
 

@@ -9,19 +9,19 @@ import StartApp
 import TransitRouter exposing (..)
 import Routes exposing (..)
 import ServerApi
-import Home
+import NewIssue
 import TransitStyle
 import IssueList
 import IssueDetail
 
 type alias Model = WithRoute Routes.Route                                     
-  { homeModel : Home.Model
+  { newIssueModel : NewIssue.Model
   , issueListModel : IssueList.Model
   , issueDetailModel : IssueDetail.Model}
 
 type Action
   = NoOp
-  | HomeAction Home.Action
+  | NewIssueAction NewIssue.Action
   | IssueListAction IssueList.Action
   | IssueDetailAction IssueDetail.Action
   | RouterAction (TransitRouter.Action Route)
@@ -30,7 +30,7 @@ type Action
 initialModel : Model
 initialModel =
   { transitRouter = TransitRouter.empty Routes.EmptyRoute
-  , homeModel = Home.init
+  , newIssueModel = NewIssue.init
   , issueListModel = IssueList.init
   , issueDetailModel = IssueDetail.init
   }
@@ -52,7 +52,7 @@ routerConfig =
 mountRoute : Route -> Route -> Model -> (Model, Effects Action)
 mountRoute prevRoute route model =                                      
   case route of
-    Home ->
+    NewIssuePage ->
       (model, Effects.none)
     IssueListPage ->
       (model, Effects.map IssueListAction (ServerApi.getIssues IssueList.HandleIssuesRetrieved))
@@ -73,10 +73,10 @@ update action model =
     NoOp ->
       (model, Effects.none)
 
-    HomeAction homeAction ->
-      let (model', effects) = Home.update homeAction model.homeModel
-      in ( { model | homeModel = model' }
-         , Effects.map HomeAction effects )
+    NewIssueAction newIssueAction ->
+      let (model', effects) = NewIssue.update newIssueAction model.newIssueModel
+      in ( { model | newIssueModel = model' }
+         , Effects.map NewIssueAction effects )
 
     IssueListAction act ->                                                       
       let (model', effects) = IssueList.update act model.issueListModel
@@ -94,15 +94,15 @@ update action model =
 
 menu : Signal.Address Action -> Model -> Html
 menu address model =                                                       
-  header [class "navbar navbar-default"] [
+  header [class "navbar navbar-default navbar-static-top"] [
     div [class "container"] [
         div [class "navbar-header"] [
           div [ class "navbar-brand" ] [
-            a (linkAttrs Home) [ text "Hagemai" ]
+            a (linkAttrs IssueListPage) [ text "Hagemai" ]
           ]
         ]
       , ul [class "nav navbar-nav"] [
-          li [] [a (linkAttrs IssueListPage) [ text "Issues" ]]       
+          li [] [a ((linkAttrs NewIssuePage) ++ [class "navbar-btn btn btn-primary"]) [ text "新規作成" ]]       
       ]
     ]
   ]
@@ -111,8 +111,8 @@ menu address model =
 contentView : Signal.Address Action -> Model -> Html
 contentView address model =                                                
   case (TransitRouter.getRoute model) of
-    Home ->
-      Home.view (Signal.forwardTo address HomeAction) model.homeModel
+    NewIssuePage ->
+      NewIssue.view (Signal.forwardTo address NewIssueAction) model.newIssueModel
 
     IssueListPage ->                                                   
       IssueList.view (Signal.forwardTo address IssueListAction) model.issueListModel
@@ -121,11 +121,13 @@ contentView address model =
       IssueDetail.view (Signal.forwardTo address IssueDetailAction) model.issueDetailModel
       
     EmptyRoute ->
-      i [class "fa fa-spinner fa-pulse"] []
+      div [style [("text-align","center"), ("padding","40px"), ("width", "100%") ]] [
+        i [class "fa fa-spinner fa-pulse fa-5x fa-fw"] []
+      ]
 
 view : Signal.Address Action -> Model -> Html
 view address model =
-  div [class "container-fluid"] [
+  div [class "wrapper"] [
       menu address model
     , div [ class "content"
           , style (TransitStyle.fade (getTransition model))]  
