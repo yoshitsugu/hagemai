@@ -12770,8 +12770,8 @@ Elm.Issue.make = function (_elm) {
          case 4: return A2($Html.div,_U.list([$Html$Attributes.$class("label label-default")]),_U.list([$Html.text("低")]));
          default: return $Html.text("");}
    };
-   var IssueForm = F2(function (a,b) {    return {ifTitle: a,ifBody: b};});
-   var Issue = F8(function (a,b,c,d,e,f,g,h) {    return {id: a,email: b,title: c,body: d,priority: e,deadline: f,createdAt: g,updatedAAt: h};});
+   var IssueForm = F4(function (a,b,c,d) {    return {ifTitle: a,ifBody: b,ifPriority: c,ifDeadline: d};});
+   var Issue = F9(function (a,b,c,d,e,f,g,h,i) {    return {id: a,email: b,title: c,body: d,priority: e,state: f,deadline: g,createdAt: h,updatedAAt: i};});
    return _elm.Issue.values = {_op: _op,Issue: Issue,IssueForm: IssueForm,priorityToHtml: priorityToHtml};
 };
 Elm.ServerApi = Elm.ServerApi || {};
@@ -12782,6 +12782,7 @@ Elm.ServerApi.make = function (_elm) {
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
    $Comment = Elm.Comment.make(_elm),
+   $Date$Format = Elm.Date.Format.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Http = Elm.Http.make(_elm),
@@ -12793,6 +12794,7 @@ Elm.ServerApi.make = function (_elm) {
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
    $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm),
    $Task = Elm.Task.make(_elm);
    var _op = {};
    var commentDecoder = A4($Json$Decode.object3,
@@ -12804,17 +12806,44 @@ Elm.ServerApi.make = function (_elm) {
       return A2($Json$Encode.encode,
       0,
       $Json$Encode.object(_U.list([{ctor: "_Tuple2",_0: "ifTitle",_1: $Json$Encode.string(a.ifTitle)}
-                                  ,{ctor: "_Tuple2",_0: "ifBody",_1: $Json$Encode.string(a.ifBody)}])));
+                                  ,{ctor: "_Tuple2",_0: "ifBody",_1: $Json$Encode.string(a.ifBody)}
+                                  ,{ctor: "_Tuple2"
+                                   ,_0: "ifPriority"
+                                   ,_1: function () {
+                                      var _p0 = $String.toInt(a.ifPriority);
+                                      if (_p0.ctor === "Ok") {
+                                            return $Json$Encode.$int(_p0._0);
+                                         } else {
+                                            return $Json$Encode.$null;
+                                         }
+                                   }()}
+                                  ,{ctor: "_Tuple2"
+                                   ,_0: "ifDeadline"
+                                   ,_1: function () {
+                                      var _p1 = a.ifDeadline;
+                                      if (_p1.ctor === "Just") {
+                                            return $Json$Encode.string(A2($Date$Format.format,"%Y/%m/%d",_p1._0));
+                                         } else {
+                                            return $Json$Encode.$null;
+                                         }
+                                   }()}])));
    };
-   var issueDecoder = A9($Json$Decode.object8,
-   $Issue.Issue,
-   A2($Json$Decode._op[":="],"id",$Json$Decode.$int),
-   A2($Json$Decode._op[":="],"email",$Json$Decode.string),
-   A2($Json$Decode._op[":="],"title",$Json$Decode.string),
-   A2($Json$Decode._op[":="],"body",$Json$Decode.string),
-   A2($Json$Decode._op[":="],"priority",$Json$Decode.$int),
-   A2($Json$Decode._op[":="],"deadline",$Json$Decode$Extra.date),
-   A2($Json$Decode._op[":="],"createdAt",$Json$Decode$Extra.date),
+   var apply = $Json$Decode.object2(F2(function (x,y) {    return x(y);}));
+   var constructing = $Json$Decode.succeed;
+   var issueDecoder = A2(apply,
+   A2(apply,
+   A2(apply,
+   A2(apply,
+   A2(apply,
+   A2(apply,
+   A2(apply,
+   A2(apply,A2(apply,constructing($Issue.Issue),A2($Json$Decode._op[":="],"id",$Json$Decode.$int)),A2($Json$Decode._op[":="],"email",$Json$Decode.string)),
+   A2($Json$Decode._op[":="],"title",$Json$Decode.string)),
+   A2($Json$Decode._op[":="],"body",$Json$Decode.string)),
+   A2($Json$Decode._op[":="],"priority",$Json$Decode.$int)),
+   A2($Json$Decode._op[":="],"state",$Json$Decode.$int)),
+   A2($Json$Decode._op[":="],"deadline",$Json$Decode.maybe($Json$Decode$Extra.date))),
+   A2($Json$Decode._op[":="],"createdAt",$Json$Decode$Extra.date)),
    A2($Json$Decode._op[":="],"updatedAt",$Json$Decode$Extra.date));
    var issueAndComment = A3($Json$Decode.tuple2,
    F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),
@@ -12829,12 +12858,12 @@ Elm.ServerApi.make = function (_elm) {
       return $Effects.task(A2($Task.map,
       action,
       $Task.toMaybe(A2($Http.fromJson,
-      issueDecoder,
+      $Json$Decode.$int,
       A2($Http.send,
       $Http.defaultSettings,
       {verb: "POST"
       ,url: A2($Basics._op["++"],baseUrl,"/issues")
-      ,body: $Http.string(encodeIssue(issue))
+      ,body: $Http.string(A2($Debug.log,"ei",encodeIssue(issue)))
       ,headers: _U.list([{ctor: "_Tuple2",_0: "Content-Type",_1: "application/json"}])})))));
    });
    var getIssueAndComments = F2(function (issueId,action) {
@@ -12846,6 +12875,8 @@ Elm.ServerApi.make = function (_elm) {
                                   ,baseUrl: baseUrl
                                   ,getIssues: getIssues
                                   ,issues: issues
+                                  ,constructing: constructing
+                                  ,apply: apply
                                   ,issueDecoder: issueDecoder
                                   ,createIssue: createIssue
                                   ,encodeIssue: encodeIssue
@@ -12876,9 +12907,9 @@ Elm.Routes.make = function (_elm) {
    var encode = function (route) {
       var _p0 = route;
       switch (_p0.ctor)
-      {case "NewIssuePage": return "/new";
+      {case "NewIssuePage": return "/issues/new";
          case "IssueListPage": return "/";
-         case "IssueDetailPage": return A2($Basics._op["++"],"/is/",$Basics.toString(_p0._0));
+         case "IssueDetailPage": return A2($Basics._op["++"],"/issues/",$Basics.toString(_p0._0));
          default: return "";}
    };
    var redirect = function (route) {    return $Effects.task(A2($Signal.send,$TransitRouter.pushPathAddress,encode(route)));};
@@ -12900,9 +12931,9 @@ Elm.Routes.make = function (_elm) {
    var IssueDetailPage = function (a) {    return {ctor: "IssueDetailPage",_0: a};};
    var IssueListPage = {ctor: "IssueListPage"};
    var NewIssuePage = {ctor: "NewIssuePage"};
-   var routeParsers = _U.list([A2($RouteParser.$static,NewIssuePage,"/new")
+   var routeParsers = _U.list([A2($RouteParser.$static,NewIssuePage,"/issues/new")
                               ,A2($RouteParser.$static,IssueListPage,"/")
-                              ,A4($RouteParser.dyn1,IssueDetailPage,"/is/",$RouteParser.$int,"")]);
+                              ,A4($RouteParser.dyn1,IssueDetailPage,"/issues/",$RouteParser.$int,"")]);
    var decode = function (path) {    return A2($Maybe.withDefault,EmptyRoute,A2($RouteParser.match,routeParsers,path));};
    return _elm.Routes.values = {_op: _op
                                ,NewIssuePage: NewIssuePage
@@ -12962,7 +12993,7 @@ Elm.IssueDetail.make = function (_elm) {
       var _p2 = _p1._1;
       var ind = $Basics.toString(_p1._0 + 2);
       return A2($Html.div,
-      _U.list([$Html$Attributes.$class("panel panel-default")]),
+      _U.list([$Html$Attributes.$class("panel panel-default"),$Html$Attributes.id(ind)]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("panel-heading")]),
               _U.list([A2($Html.a,_U.list([$Html$Attributes.href(A2($Basics._op["++"],"#",ind))]),_U.list([$Html.text(ind)]))
@@ -12980,32 +13011,39 @@ Elm.IssueDetail.make = function (_elm) {
    var view = F2(function (address,model) {
       var _p3 = model.issue;
       if (_p3.ctor === "Just") {
-            var _p4 = _p3._0;
+            var _p5 = _p3._0;
             return A2($Html.div,
             _U.list([$Html$Attributes.$class("container")]),
             _U.list([A2($Html.h1,
                     _U.list([]),
-                    _U.list([$Html.text(A2($Basics._op["++"],"#",A2($Basics._op["++"],$Basics.toString(_p4.id),A2($Basics._op["++"],"  ",_p4.title))))]))
+                    _U.list([$Html.text(A2($Basics._op["++"],"#",A2($Basics._op["++"],$Basics.toString(_p5.id),A2($Basics._op["++"],"  ",_p5.title))))]))
                     ,A2($Html.div,
                     _U.list([$Html$Attributes.$class("well well-sm")]),
-                    _U.list([$Issue.priorityToHtml(_p4.priority)
+                    _U.list([$Issue.priorityToHtml(_p5.priority)
                             ,A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-calendar-o")]),_U.list([]))
-                            ,$Html.text(A2($Date$Format.format,"%Y/%m/%d",_p4.deadline))]))
+                            ,$Html.text(function () {
+                               var _p4 = _p5.deadline;
+                               if (_p4.ctor === "Just") {
+                                     return A2($Date$Format.format,"%Y/%m/%d",_p4._0);
+                                  } else {
+                                     return "";
+                                  }
+                            }())]))
                     ,A2($Html.div,
                     _U.list([$Html$Attributes.$class("panel panel-default")]),
                     _U.list([A2($Html.div,
-                            _U.list([$Html$Attributes.$class("panel-heading")]),
+                            _U.list([$Html$Attributes.$class("panel-heading"),$Html$Attributes.id("1")]),
                             _U.list([A2($Html.a,_U.list([$Html$Attributes.href("#1")]),_U.list([$Html.text("1")]))
                                     ,$Html.text(" ")
                                     ,A2($Html.span,
                                     _U.list([$Html$Attributes.title("送信者")]),
                                     _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-envelope-o")]),_U.list([]))
-                                            ,$Html.text(A2($Basics._op["++"],_p4.email," "))]))
+                                            ,$Html.text(A2($Basics._op["++"],_p5.email," "))]))
                                     ,A2($Html.span,
                                     _U.list([$Html$Attributes.title("送信日時")]),
                                     _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-clock-o")]),_U.list([]))
-                                            ,$Html.text(A2($Date$Format.format,"%Y/%m/%d %H:%M",_p4.createdAt))]))]))
-                            ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),$Util.nl2br(_p4.body))]))
+                                            ,$Html.text(A2($Date$Format.format,"%Y/%m/%d %H:%M",_p5.createdAt))]))]))
+                            ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),$Util.nl2br(_p5.body))]))
                     ,A2($Html.div,
                     _U.list([$Html$Attributes.$class("comments")]),
                     A2($List.map,commentPanel,A2($List.indexedMap,F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),model.comments)))]));
@@ -13016,16 +13054,16 @@ Elm.IssueDetail.make = function (_elm) {
    var Show = function (a) {    return {ctor: "Show",_0: a};};
    var IssueDetailRetrieved = function (a) {    return {ctor: "IssueDetailRetrieved",_0: a};};
    var update = F2(function (action,model) {
-      var _p5 = action;
-      if (_p5.ctor === "IssueDetailRetrieved") {
-            var _p6 = _p5._0;
-            if (_p6.ctor === "Just" && _p6._0.ctor === "_Tuple2") {
-                  return {ctor: "_Tuple2",_0: _U.update(model,{issue: $Maybe.Just(_p6._0._0),comments: _p6._0._1}),_1: $Effects.none};
+      var _p6 = action;
+      if (_p6.ctor === "IssueDetailRetrieved") {
+            var _p7 = _p6._0;
+            if (_p7.ctor === "Just" && _p7._0.ctor === "_Tuple2") {
+                  return {ctor: "_Tuple2",_0: _U.update(model,{issue: $Maybe.Just(_p7._0._0),comments: _p7._0._1}),_1: $Effects.none};
                } else {
                   return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
                }
          } else {
-            return {ctor: "_Tuple2",_0: model,_1: A2($ServerApi.getIssueAndComments,_p5._0,IssueDetailRetrieved)};
+            return {ctor: "_Tuple2",_0: model,_1: A2($ServerApi.getIssueAndComments,_p6._0,IssueDetailRetrieved)};
          }
    });
    var Model = F2(function (a,b) {    return {issue: a,comments: b};});
@@ -13065,7 +13103,16 @@ Elm.IssueList.make = function (_elm) {
       _U.list([A2($Html.td,_U.list([]),_U.list([$Html.text($Basics.toString(issue.id))]))
               ,A2($Html.td,_U.list([]),_U.list([$Html.text(issue.title)]))
               ,A2($Html.td,_U.list([]),_U.list([$Issue.priorityToHtml(issue.priority)]))
-              ,A2($Html.td,_U.list([]),_U.list([$Html.text(A2($Date$Format.format,"%Y/%m/%d",issue.deadline))]))
+              ,A2($Html.td,
+              _U.list([]),
+              _U.list([$Html.text(function () {
+                 var _p0 = issue.deadline;
+                 if (_p0.ctor === "Just") {
+                       return A2($Date$Format.format,"%Y/%m/%d",_p0._0);
+                    } else {
+                       return "";
+                    }
+              }())]))
               ,A2($Html.td,
               _U.list([]),
               _U.list([A2($Html.button,
@@ -13090,11 +13137,11 @@ Elm.IssueList.make = function (_elm) {
    });
    var HandleIssuesRetrieved = function (a) {    return {ctor: "HandleIssuesRetrieved",_0: a};};
    var update = F2(function (action,model) {
-      var _p0 = action;
-      if (_p0.ctor === "Show") {
+      var _p1 = action;
+      if (_p1.ctor === "Show") {
             return {ctor: "_Tuple2",_0: model,_1: $ServerApi.getIssues(HandleIssuesRetrieved)};
          } else {
-            return {ctor: "_Tuple2",_0: _U.update(model,{issues: A2($Maybe.withDefault,_U.list([]),_p0._0)}),_1: $Effects.none};
+            return {ctor: "_Tuple2",_0: _U.update(model,{issues: A2($Maybe.withDefault,_U.list([]),_p1._0)}),_1: $Effects.none};
          }
    });
    var Show = {ctor: "Show"};
@@ -13116,6 +13163,8 @@ Elm.NewIssue.make = function (_elm) {
    if (_elm.NewIssue.values) return _elm.NewIssue.values;
    var _U = Elm.Native.Utils.make(_elm),
    $Basics = Elm.Basics.make(_elm),
+   $Date = Elm.Date.make(_elm),
+   $Date$Format = Elm.Date.Format.make(_elm),
    $Debug = Elm.Debug.make(_elm),
    $Effects = Elm.Effects.make(_elm),
    $Html = Elm.Html.make(_elm),
@@ -13127,7 +13176,8 @@ Elm.NewIssue.make = function (_elm) {
    $Result = Elm.Result.make(_elm),
    $Routes = Elm.Routes.make(_elm),
    $ServerApi = Elm.ServerApi.make(_elm),
-   $Signal = Elm.Signal.make(_elm);
+   $Signal = Elm.Signal.make(_elm),
+   $String = Elm.String.make(_elm);
    var _op = {};
    var NoOp = {ctor: "NoOp"};
    var HandleSaved = function (a) {    return {ctor: "HandleSaved",_0: a};};
@@ -13135,21 +13185,33 @@ Elm.NewIssue.make = function (_elm) {
       var _p0 = action;
       switch (_p0.ctor)
       {case "NoOp": return {ctor: "_Tuple2",_0: model,_1: $Effects.none};
-         case "SetIssueTitle": return {ctor: "_Tuple2",_0: _U.update(model,{issueForm: {ifTitle: _p0._0,ifBody: model.issueForm.ifBody}}),_1: $Effects.none};
-         case "SetIssueBody": return {ctor: "_Tuple2",_0: _U.update(model,{issueForm: {ifBody: _p0._0,ifTitle: model.issueForm.ifTitle}}),_1: $Effects.none};
-         case "PostIssue": return {ctor: "_Tuple2"
-                                  ,_0: model
-                                  ,_1: A2($ServerApi.createIssue,{ifTitle: model.issueForm.ifTitle,ifBody: model.issueForm.ifBody},HandleSaved)};
-         default: var _p1 = _p0._0;
-           if (_p1.ctor === "Just") {
-                 var _p3 = _p1._0;
-                 return {ctor: "_Tuple2"
-                        ,_0: _U.update(model,{issueForm: {ifTitle: _p3.title,ifBody: _p3.body}})
-                        ,_1: A2($Effects.map,function (_p2) {    return NoOp;},$Routes.redirect($Routes.IssueListPage))};
+         case "SetIssueTitle": return {ctor: "_Tuple2",_0: _U.update(model,{ifTitle: _p0._0}),_1: $Effects.none};
+         case "SetIssueBody": return {ctor: "_Tuple2",_0: _U.update(model,{ifBody: _p0._0}),_1: $Effects.none};
+         case "SetIssuePriority": return {ctor: "_Tuple2",_0: _U.update(model,{ifPriority: _p0._0}),_1: $Effects.none};
+         case "SetIssueDeadline": var _p2 = _p0._0;
+           return {ctor: "_Tuple2"
+                  ,_0: _U.update(model,
+                  {ifDeadline: function () {
+                     if (_U.cmp($String.length(_p2),0) > 0) {
+                           var _p1 = $Date.fromString(_p2);
+                           if (_p1.ctor === "Ok") {
+                                 return $Maybe.Just(_p1._0);
+                              } else {
+                                 return $Maybe.Nothing;
+                              }
+                        } else return $Maybe.Nothing;
+                  }()})
+                  ,_1: $Effects.none};
+         case "PostIssue": return {ctor: "_Tuple2",_0: model,_1: A2($ServerApi.createIssue,model,HandleSaved)};
+         default: var _p3 = _p0._0;
+           if (_p3.ctor === "Just") {
+                 return {ctor: "_Tuple2",_0: model,_1: A2($Effects.map,function (_p4) {    return NoOp;},$Routes.redirect($Routes.IssueDetailPage(_p3._0)))};
               } else {
-                 return {ctor: "_Tuple2",_0: model,_1: A2($Effects.map,function (_p4) {    return NoOp;},$Routes.redirect($Routes.IssueListPage))};
+                 return {ctor: "_Tuple2",_0: model,_1: A2($Effects.map,function (_p5) {    return NoOp;},$Routes.redirect($Routes.IssueListPage))};
               }}
    });
+   var SetIssueDeadline = function (a) {    return {ctor: "SetIssueDeadline",_0: a};};
+   var SetIssuePriority = function (a) {    return {ctor: "SetIssuePriority",_0: a};};
    var SetIssueBody = function (a) {    return {ctor: "SetIssueBody",_0: a};};
    var SetIssueTitle = function (a) {    return {ctor: "SetIssueTitle",_0: a};};
    var PostIssue = {ctor: "PostIssue"};
@@ -13158,12 +13220,12 @@ Elm.NewIssue.make = function (_elm) {
       _U.list([$Html$Attributes.$class("form-horizontal")]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Title")]))
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("件名")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-sm-10")]),
                       _U.list([A2($Html.input,
                       _U.list([$Html$Attributes.$class("form-control")
-                              ,$Html$Attributes.value("")
+                              ,$Html$Attributes.value(model.ifTitle)
                               ,A3($Html$Events.on,
                               "input",
                               $Html$Events.targetValue,
@@ -13173,13 +13235,13 @@ Elm.NewIssue.make = function (_elm) {
                       _U.list([]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Body")]))
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("内容")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-sm-10")]),
                       _U.list([A2($Html.textarea,
                       _U.list([$Html$Attributes.$class("form-control")
-                              ,$Html$Attributes.value("")
-                              ,$Html$Attributes.rows(10)
+                              ,$Html$Attributes.value(model.ifBody)
+                              ,$Html$Attributes.rows(8)
                               ,A3($Html$Events.on,
                               "input",
                               $Html$Events.targetValue,
@@ -13189,10 +13251,52 @@ Elm.NewIssue.make = function (_elm) {
                       _U.list([]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Deadline")]))
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("優先度")]))
+                      ,A2($Html.div,
+                      _U.list([$Html$Attributes.$class("col-sm-10")
+                              ,A3($Html$Events.on,
+                              "change",
+                              $Html$Events.targetValue,
+                              function (str) {
+                                 return A2($Signal.message,address,SetIssuePriority(str));
+                              })]),
+                      _U.list([A2($Html.select,
+                      _U.list([$Html$Attributes.$class("form-control")]),
+                      _U.list([A2($Html.option,
+                              _U.list([$Html$Attributes.value("1"),$Html$Attributes.selected(_U.eq(model.ifPriority,"1"))]),
+                              _U.list([$Html.text("緊急")]))
+                              ,A2($Html.option,
+                              _U.list([$Html$Attributes.value("2"),$Html$Attributes.selected(_U.eq(model.ifPriority,"2"))]),
+                              _U.list([$Html.text("高")]))
+                              ,A2($Html.option,
+                              _U.list([$Html$Attributes.value("3"),$Html$Attributes.selected(_U.eq(model.ifPriority,"3"))]),
+                              _U.list([$Html.text("中")]))
+                              ,A2($Html.option,
+                              _U.list([$Html$Attributes.value("4"),$Html$Attributes.selected(_U.eq(model.ifPriority,"4"))]),
+                              _U.list([$Html.text("低")]))]))]))]))
+              ,A2($Html.div,
+              _U.list([$Html$Attributes.$class("form-group")]),
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("締切")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-sm-10")]),
-                      _U.list([A2($Html.input,_U.list([$Html$Attributes.$class("form-control"),$Html$Attributes.type$("date")]),_U.list([]))]))]))
+                      _U.list([A2($Html.input,
+                      _U.list([$Html$Attributes.$class("form-control")
+                              ,$Html$Attributes.type$("date")
+                              ,$Html$Attributes.value(function () {
+                                 var _p6 = model.ifDeadline;
+                                 if (_p6.ctor === "Just") {
+                                       return A2($Date$Format.format,"%Y-%m-%d",_p6._0);
+                                    } else {
+                                       return "";
+                                    }
+                              }())
+                              ,A3($Html$Events.on,
+                              "change",
+                              $Html$Events.targetValue,
+                              function (str) {
+                                 return A2($Signal.message,address,SetIssueDeadline(str));
+                              })]),
+                      _U.list([]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
               _U.list([A2($Html.div,
@@ -13202,16 +13306,16 @@ Elm.NewIssue.make = function (_elm) {
    var view = F2(function (address,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("container")]),
-      _U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("Create Issue")])),A2(issueForm,address,model)]));
+      _U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("新規作成")])),A2(issueForm,address,model)]));
    });
-   var Model = function (a) {    return {issueForm: a};};
-   var init = Model({ifTitle: "",ifBody: ""});
+   var init = {ifTitle: "",ifBody: "",ifPriority: "3",ifDeadline: $Maybe.Nothing};
    return _elm.NewIssue.values = {_op: _op
-                                 ,Model: Model
                                  ,init: init
                                  ,PostIssue: PostIssue
                                  ,SetIssueTitle: SetIssueTitle
                                  ,SetIssueBody: SetIssueBody
+                                 ,SetIssuePriority: SetIssuePriority
+                                 ,SetIssueDeadline: SetIssueDeadline
                                  ,HandleSaved: HandleSaved
                                  ,NoOp: NoOp
                                  ,update: update

@@ -18,9 +18,9 @@ type Route
 
 routeParsers : List (Matcher Route)
 routeParsers =
-  [ static NewIssuePage "/new"
+  [ static NewIssuePage "/issues/new"
   , static IssueListPage "/"
-  , dyn1 IssueDetailPage "/is/" int ""
+  , dyn1 IssueDetailPage "/issues/" int ""
   ]
 
 decode : String -> Route
@@ -31,9 +31,9 @@ decode path =
 encode : Route -> String
 encode route =
   case route of
-    NewIssuePage -> "/new"
+    NewIssuePage -> "/issues/new"
     IssueListPage   -> "/"
-    IssueDetailPage i -> "/is/" ++ toString i
+    IssueDetailPage i -> "/issues/" ++ toString i
     EmptyRoute -> ""
 
 redirect : Route -> Effects ()

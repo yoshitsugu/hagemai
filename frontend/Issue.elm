@@ -11,7 +11,8 @@ type alias Issue =
   , title: String
   , body: String
   , priority: Int
-  , deadline: Date.Date
+  , state: Int
+  , deadline: Maybe Date.Date
   , createdAt: Date.Date
   , updatedAAt: Date.Date
   }
@@ -19,6 +20,8 @@ type alias Issue =
 type alias IssueForm =
   { ifTitle : String
   , ifBody : String
+  , ifPriority : String
+  , ifDeadline : Maybe Date.Date               
   }
 
 priorityToHtml : Int -> Html

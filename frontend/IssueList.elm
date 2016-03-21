@@ -9,6 +9,7 @@ import Routes
 import Date
 import Date.Format as DateFormat
 import Issue exposing (..)
+import Debug
 
 type alias Model =
      { issues : List Issue }
@@ -57,6 +58,9 @@ issueRow issue =
      td [] [text (toString issue.id)]
     ,td [] [text issue.title]
     ,td [] [priorityToHtml issue.priority]
-    ,td [] [text (DateFormat.format "%Y/%m/%d" issue.deadline)]
+    ,td [] [text (case issue.deadline of
+                    Just date -> DateFormat.format "%Y/%m/%d" date
+                    Nothing -> ""
+                         )]
     ,td [] [button [ (Routes.clickAttr <| Routes.IssueDetailPage issue.id), class "btn btn-primary" ] [text "詳細"]]
   ]

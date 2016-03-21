@@ -42,10 +42,12 @@ view address model =
                  , div [class "well well-sm"]
                          [ priorityToHtml is.priority
                          , i [class "fa fa-fw fa-calendar-o"] []
-                         , text (DateFormat.format "%Y/%m/%d" is.deadline)
+                         , text (case is.deadline of
+                                   Just date -> DateFormat.format "%Y/%m/%d" date
+                                   Nothing -> "")
                          ]
                  , div [class "panel panel-default"] 
-                     [ div [class "panel-heading"]
+                     [ div [class "panel-heading", id "1"]
                            [ a [href "#1"] [text "1"]
                            , text " "
                            , span [title "送信者"]
@@ -66,7 +68,7 @@ view address model =
 commentPanel : (Int, Comment) -> Html
 commentPanel (index, comment) =
   let ind = toString (index + 2) in
-  div [class "panel panel-default"] [
+  div [class "panel panel-default", id ind] [
        div [class "panel-heading"]
            [ a [href ("#" ++ ind)] [text ind]
            , text " "

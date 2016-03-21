@@ -8,38 +8,40 @@
 module Main where
 
 import qualified Comment
-import           Control.Monad.IO.Class     (liftIO)
-import qualified Control.Monad.Trans.Either as E (EitherT, left)
+import           Control.Monad.IO.Class         (liftIO)
+import qualified Control.Monad.Trans.Either     as E (EitherT, left)
 import           Data.Aeson
 import           Data.Text
-import           Data.Time.Clock            (getCurrentTime)
+import           Data.Time.Clock                (getCurrentTime)
 import           Data.Time.LocalTime
-import           Database.HDBC              (withTransaction)
-import           Database.HDBC.Record       (runInsert, runQuery)
+import           Database.HDBC                  (withTransaction)
+import           Database.HDBC.Record           (runInsert, runQuery)
 import           Database.Relational.Query
-import qualified Database.Relational.Query  as Q ((!))
-import           DataSource                 (Connection, connect)
+import qualified Database.Relational.Query      as Q ((!))
+import           Database.Relational.Query.Type (unsafeTypedQuery)
+import           DataSource                     (Connection, connect)
+import           Debug.Trace
 import           GHC.Generics
 import           IndexPage
 import qualified Issue
 import           Network.Wai
-import           Network.Wai.Handler.Warp   (run)
+import           Network.Wai.Handler.Warp       (run)
 import           Servant
 import           Servant.API
-import           Servant.HTML.Blaze         (HTML)
-import           System.Directory           (getCurrentDirectory)
+import           Servant.HTML.Blaze             (HTML)
+import           System.Directory               (getCurrentDirectory)
 
 type IssueAPI =
   Get '[JSON] [Issue.Issue]
   :<|> Capture "issueId" Integer :> Get '[JSON] (Issue.Issue, [Comment.Comment])
-  :<|> ReqBody '[JSON] Issue.IssueForm :> Post '[JSON] Issue.Issue
+  :<|> ReqBody '[JSON] Issue.IssueForm :> Post '[JSON] Integer
 
 type API =
   "assets" :> Raw
   :<|> "api" :> "issues" :> IssueAPI
   :<|> Get '[HTML] IndexPage
-  :<|> "is" :> Get '[HTML] IndexPage
-  :<|> "is" :> Capture "issueId" Integer :> Get '[HTML] IndexPage
+  :<|> "issues" :> "new" :> Get '[HTML] IndexPage
+  :<|> "issues" :> Capture "issueId" Integer :> Get '[HTML] IndexPage
 
 api :: Proxy API
 api = Proxy
@@ -70,21 +72,23 @@ issuesServer conn = getIssues :<|> showIssue :<|> createIssue
           return (is, cs)
         _ -> E.left (err404 {errBody = "No issue with given id exists"})
 
-    createIssue :: Issue.IssueForm -> E.EitherT ServantErr IO Issue.Issue
+    createIssue :: Issue.IssueForm -> E.EitherT ServantErr IO Integer
     createIssue issue = do
       let tz = hoursToTimeZone 9
       ctu <- liftIO getCurrentTime
       let ct = utcToLocalTime tz ctu
-          is = toIssue issue ct
-      insertedId <- liftIO $ withTransaction conn (\c -> runInsert c Issue.insertIssue is)
-      r <- liftIO $ runQuery conn (relationalQuery (issueById insertedId)) ()
-      case r of
-        [] -> E.left (err404 {errBody = "No issue with given id exists"})
-        [i] -> return i
-        _ -> E.left (err404 {errBody = "No issue with given id exists"})
-
+          is = toIssue (trace (show issue) issue) ct
+      liftIO $ withTransaction conn
+        (\c -> do
+          _ <- runInsert c Issue.insertIssue is
+          q <- runQuery c (unsafeTypedQuery "select LAST_INSERT_ID()") ()  :: IO [Integer]
+          case q of
+            [] -> return 0
+            [i] -> return i
+            _ -> return 0
+        )
       where
-        toIssue issue ct = Issue.Issue 0 "hoge@example.com" (Issue.ifTitle issue) (Issue.ifBody issue) 1 (Just (localDay ct)) 1 ct ct
+        toIssue issue ct = Issue.Issue 0 "hoge@example.com" (Issue.ifTitle issue) (Issue.ifBody issue) (Issue.ifPriority issue) (Issue.ifDeadline issue) 1 ct ct
 
 issues :: Relation () Issue.Issue
 issues = relation $ query Issue.issue

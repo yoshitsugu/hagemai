@@ -8,10 +8,13 @@ import Task exposing (..)
 import Effects exposing (Effects, Never)
 import Http
 import Date
+import Date.Format as DateFormat
 import Json.Decode.Extra as JsonEx
 import Result exposing (toMaybe)
 import Issue exposing (..)
 import Comment exposing (..)
+import String
+import Debug
                  
 baseUrl : String
 baseUrl = "http://localhost:8081/api"
@@ -29,29 +32,35 @@ issues : Json.Decoder (List Issue)
 issues =                                              
   Json.list issueDecoder
 
+constructing : a -> Json.Decoder a
+constructing = Json.succeed
+
+apply : Json.Decoder (a -> b) -> Json.Decoder a -> Json.Decoder b
+apply = Json.object2 (<|)
 
 issueDecoder : Json.Decoder Issue
-issueDecoder =                                               
-  Json.object8 Issue
-    ("id" := Json.int)
-    ("email" := Json.string)
-    ("title" := Json.string)
-    ("body" := Json.string)
-    ("priority" := Json.int)
-    ("deadline" := JsonEx.date )
-    ("createdAt" := JsonEx.date )
-    ("updatedAt" := JsonEx.date )
+issueDecoder =
+  constructing Issue
+    `apply` ("id" := Json.int)
+    `apply` ("email" := Json.string)
+    `apply` ("title" := Json.string)
+    `apply` ("body" := Json.string)
+    `apply` ("priority" := Json.int)
+    `apply` ("state" := Json.int)
+    `apply` ("deadline" := Json.maybe JsonEx.date )
+    `apply` ("createdAt" := JsonEx.date )
+    `apply` ("updatedAt" := JsonEx.date )
                     
 
-createIssue : IssueForm -> (Maybe Issue -> b) -> Effects.Effects b
+createIssue : IssueForm -> (Maybe Int -> b) -> Effects.Effects b
 createIssue issue action =              
   Http.send Http.defaultSettings
      { verb = "POST"
      , url = baseUrl ++ "/issues"
-     , body = Http.string (encodeIssue issue)
+     , body = Http.string (Debug.log "ei" (encodeIssue issue))
      , headers = [("Content-Type", "application/json")]
     }
-  |> Http.fromJson issueDecoder
+  |> Http.fromJson Json.int
   |> Task.toMaybe
   |> Task.map action
   |> Effects.task
@@ -63,6 +72,14 @@ encodeIssue a =
       [
         ("ifTitle", JsonE.string a.ifTitle)
         , ("ifBody", JsonE.string a.ifBody)
+        , ("ifPriority", case String.toInt a.ifPriority of
+                           Ok i -> JsonE.int i
+                           Err e -> JsonE.null
+          )
+        , ("ifDeadline", case a.ifDeadline of
+                           Just date -> (JsonE.string (DateFormat.format "%Y-%m-%d" date))
+                           Nothing -> JsonE.null)
+                                      
       ]
 
 getIssueAndComments : Int -> (Maybe (Issue, (List Comment)) -> a) -> Effects.Effects a
