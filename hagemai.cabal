@@ -3,10 +3,10 @@ version:             0.1.0.0
 synopsis:            Simple project template from stack
 description:         Please see README.md
 homepage:            http://github.com/yoshitsugu/hagemai#readme
-license:             BSD3
+license:             MIT
 license-file:        LICENSE
 author:              Kota Yoshitsugu
-maintainer:          kootaa1206@yahoo.co.jp
+maintainer:          Kota Yoshitsugu
 copyright:           2015 Yoshitsugu
 category:            Web
 build-type:          Simple
