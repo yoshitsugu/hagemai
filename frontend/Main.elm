@@ -98,11 +98,11 @@ menu address model =
     div [class "container"] [
         div [class "navbar-header"] [
           div [ class "navbar-brand" ] [
-            a (linkAttrs IssueListPage) [ text "Hagemai" ]
+            a (linkAttrs IssueListPage) [ text "HAGEMAI" ]
           ]
         ]
       , ul [class "nav navbar-nav"] [
-          li [] [a ((linkAttrs NewIssuePage) ++ [class "btn btn-info navbar-btn"]) [ text "新規作成" ]]       
+          li [] [a ((linkAttrs NewIssuePage) ++ [class "btn btn-info navbar-btn"]) [ text "Create" ]]       
       ]
     ]
   ]

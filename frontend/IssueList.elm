@@ -42,9 +42,9 @@ view address model =
           thead [] [
             tr [] [
                th [] [text "ID"]
-              ,th [] [text "タイトル"]
-              ,th [] [text "優先度"]
-              ,th [] [text "締切"]
+              ,th [] [text "Title"]
+              ,th [] [text "Priority"]
+              ,th [] [text "Deadline"]
               ,th [] []
           ]
         ]
@@ -62,5 +62,5 @@ issueRow issue =
                     Just date -> DateFormat.format "%Y/%m/%d" date
                     Nothing -> ""
                          )]
-    ,td [] [button [ (Routes.clickAttr <| Routes.IssueDetailPage issue.id), class "btn btn-primary" ] [text "詳細"]]
+    ,td [] [button [ (Routes.clickAttr <| Routes.IssueDetailPage issue.id), class "btn btn-primary" ] [text "Detail"]]
   ]

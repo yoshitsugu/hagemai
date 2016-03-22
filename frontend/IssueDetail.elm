@@ -118,11 +118,11 @@ view address model =
                      [ div [class "panel-heading", id "1"]
                            [ a [href "#1"] [text "1"]
                            , text " "
-                           , span [title "送信者"]
+                           , span [title "From"]
                                [ i [class "fa fa-fw fa-envelope-o"] []
                                , text (is.email ++ " ")
                                ]
-                           , span [title "送信日時"]
+                           , span [title "Submitted At"]
                                [ i [class "fa fa-fw fa-clock-o"] []
                                , text (DateFormat.format "%Y/%m/%d %H:%M" is.createdAt)
                                ]
@@ -130,6 +130,7 @@ view address model =
                      , div [class "panel-body"] (nl2br is.body)
                      ]
                  , div [class "comments"] (List.map commentPanel (indexedMap (,) model.comments))
+                 , br [] []
                  , h3 [] [text "Add Comment"]
                  , commentFormView address model
                ]
@@ -142,11 +143,11 @@ commentPanel (index, comment) =
        div [class "panel-heading"]
            [ a [href ("#" ++ ind)] [text ind]
            , text " "
-           , span [title "送信者"]
+           , span [title "From"]
                [ i [class "fa fa-fw fa-envelope-o"] []
                , text (comment.email ++ " ")
                ]
-           , span [title "送信日時"]
+           , span [title "Submitted At"]
                [ i [class "fa fa-fw fa-clock-o"] []
                , text (DateFormat.format "%Y/%m/%d %H:%M" comment.createdAt)
                ]
@@ -164,7 +165,7 @@ commentFormView address model =
     [ class "form-horizontal"]
     [ div
       [ class "form-group" ]
-      [ label [ class "col-sm-2 control-label" ] [ text "メールアドレス" ]
+      [ label [ class "col-sm-2 control-label" ] [ text "Email" ]
       , div
         [ class "col-sm-10" ]
         [ input
@@ -177,7 +178,7 @@ commentFormView address model =
       ]
     , div
       [ class "form-group" ]
-      [ label [ class "col-sm-2 control-label" ] [ text "件名" ]
+      [ label [ class "col-sm-2 control-label" ] [ text "Title" ]
       , div
         [ class "col-sm-10" ]
         [ input
@@ -190,7 +191,7 @@ commentFormView address model =
       ]
     , div
       [ class "form-group"]
-      [ label [ class "col-sm-2 control-label" ] [ text "内容" ]
+      [ label [ class "col-sm-2 control-label" ] [ text "Body" ]
       , div
         [ class "col-sm-10" ]
         [ textarea
@@ -204,7 +205,7 @@ commentFormView address model =
       ]
     , div
       [ class "form-group"]
-      [ label [ class "col-sm-2 control-label" ] [ text "優先度" ]
+      [ label [ class "col-sm-2 control-label" ] [ text "Priority" ]
       , div
         [ class "col-sm-10"
         , on "change" targetValue (\str -> Signal.message address (SetCommentPriority str))
@@ -220,7 +221,7 @@ commentFormView address model =
       ]
     , div
       [ class "form-group"]
-      [ label [ class "col-sm-2 control-label" ] [ text "締切" ]
+      [ label [ class "col-sm-2 control-label" ] [ text "Deadline" ]
       , div
         [ class "col-sm-10" ]
         [ input

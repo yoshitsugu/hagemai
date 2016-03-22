@@ -13066,11 +13066,11 @@ Elm.IssueDetail.make = function (_elm) {
               _U.list([A2($Html.a,_U.list([$Html$Attributes.href(A2($Basics._op["++"],"#",ind))]),_U.list([$Html.text(ind)]))
                       ,$Html.text(" ")
                       ,A2($Html.span,
-                      _U.list([$Html$Attributes.title("送信者")]),
+                      _U.list([$Html$Attributes.title("From")]),
                       _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-envelope-o")]),_U.list([]))
                               ,$Html.text(A2($Basics._op["++"],_p2.email," "))]))
                       ,A2($Html.span,
-                      _U.list([$Html$Attributes.title("送信日時")]),
+                      _U.list([$Html$Attributes.title("Submitted At")]),
                       _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-clock-o")]),_U.list([]))
                               ,$Html.text(A2($Date$Format.format,"%Y/%m/%d %H:%M",_p2.createdAt))]))]))
               ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),$Util.nl2br(_p2.body))]));
@@ -13089,7 +13089,7 @@ Elm.IssueDetail.make = function (_elm) {
       _U.list([$Html$Attributes.$class("form-horizontal")]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("メールアドレス")]))
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Email")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-sm-10")]),
                       _U.list([A2($Html.input,
@@ -13104,7 +13104,7 @@ Elm.IssueDetail.make = function (_elm) {
                       _U.list([]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("件名")]))
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Title")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-sm-10")]),
                       _U.list([A2($Html.input,
@@ -13119,7 +13119,7 @@ Elm.IssueDetail.make = function (_elm) {
                       _U.list([]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("内容")]))
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Body")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-sm-10")]),
                       _U.list([A2($Html.textarea,
@@ -13135,7 +13135,7 @@ Elm.IssueDetail.make = function (_elm) {
                       _U.list([]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("優先度")]))
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Priority")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-sm-10")
                               ,A3($Html$Events.on,
@@ -13160,7 +13160,7 @@ Elm.IssueDetail.make = function (_elm) {
                               _U.list([$Html.text("低")]))]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("締切")]))
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Deadline")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-sm-10")]),
                       _U.list([A2($Html.input,
@@ -13215,17 +13215,18 @@ Elm.IssueDetail.make = function (_elm) {
                             _U.list([A2($Html.a,_U.list([$Html$Attributes.href("#1")]),_U.list([$Html.text("1")]))
                                     ,$Html.text(" ")
                                     ,A2($Html.span,
-                                    _U.list([$Html$Attributes.title("送信者")]),
+                                    _U.list([$Html$Attributes.title("From")]),
                                     _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-envelope-o")]),_U.list([]))
                                             ,$Html.text(A2($Basics._op["++"],_p6.email," "))]))
                                     ,A2($Html.span,
-                                    _U.list([$Html$Attributes.title("送信日時")]),
+                                    _U.list([$Html$Attributes.title("Submitted At")]),
                                     _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-clock-o")]),_U.list([]))
                                             ,$Html.text(A2($Date$Format.format,"%Y/%m/%d %H:%M",_p6.createdAt))]))]))
                             ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),$Util.nl2br(_p6.body))]))
                     ,A2($Html.div,
                     _U.list([$Html$Attributes.$class("comments")]),
                     A2($List.map,commentPanel,A2($List.indexedMap,F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),model.comments)))
+                    ,A2($Html.br,_U.list([]),_U.list([]))
                     ,A2($Html.h3,_U.list([]),_U.list([$Html.text("Add Comment")]))
                     ,A2(commentFormView,address,model)]));
          } else {
@@ -13344,7 +13345,7 @@ Elm.IssueList.make = function (_elm) {
               _U.list([]),
               _U.list([A2($Html.button,
               _U.list([$Routes.clickAttr($Routes.IssueDetailPage(issue.id)),$Html$Attributes.$class("btn btn-primary")]),
-              _U.list([$Html.text("詳細")]))]))]));
+              _U.list([$Html.text("Detail")]))]))]));
    };
    var view = F2(function (address,model) {
       return A2($Html.div,
@@ -13356,9 +13357,9 @@ Elm.IssueList.make = function (_elm) {
               _U.list([A2($Html.tr,
               _U.list([]),
               _U.list([A2($Html.th,_U.list([]),_U.list([$Html.text("ID")]))
-                      ,A2($Html.th,_U.list([]),_U.list([$Html.text("タイトル")]))
-                      ,A2($Html.th,_U.list([]),_U.list([$Html.text("優先度")]))
-                      ,A2($Html.th,_U.list([]),_U.list([$Html.text("締切")]))
+                      ,A2($Html.th,_U.list([]),_U.list([$Html.text("Title")]))
+                      ,A2($Html.th,_U.list([]),_U.list([$Html.text("Priority")]))
+                      ,A2($Html.th,_U.list([]),_U.list([$Html.text("Deadline")]))
                       ,A2($Html.th,_U.list([]),_U.list([]))]))]))
               ,A2($Html.tbody,_U.list([]),A2($List.map,issueRow,model.issues))]))]));
    });
@@ -13451,7 +13452,7 @@ Elm.NewIssue.make = function (_elm) {
       _U.list([$Html$Attributes.$class("form-horizontal")]),
       _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("メールアドレス")]))
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Email")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-sm-10")]),
                       _U.list([A2($Html.input,
@@ -13466,7 +13467,7 @@ Elm.NewIssue.make = function (_elm) {
                       _U.list([]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("件名")]))
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Titile")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-sm-10")]),
                       _U.list([A2($Html.input,
@@ -13481,7 +13482,7 @@ Elm.NewIssue.make = function (_elm) {
                       _U.list([]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("内容")]))
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Body")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-sm-10")]),
                       _U.list([A2($Html.textarea,
@@ -13497,7 +13498,7 @@ Elm.NewIssue.make = function (_elm) {
                       _U.list([]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("優先度")]))
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Priority")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-sm-10")
                               ,A3($Html$Events.on,
@@ -13522,7 +13523,7 @@ Elm.NewIssue.make = function (_elm) {
                               _U.list([$Html.text("低")]))]))]))]))
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
-              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("締切")]))
+              _U.list([A2($Html.label,_U.list([$Html$Attributes.$class("col-sm-2 control-label")]),_U.list([$Html.text("Deadline")]))
                       ,A2($Html.div,
                       _U.list([$Html$Attributes.$class("col-sm-10")]),
                       _U.list([A2($Html.input,
@@ -13552,7 +13553,7 @@ Elm.NewIssue.make = function (_elm) {
    var view = F2(function (address,model) {
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("container")]),
-      _U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("新規作成")])),A2(issueForm,address,model)]));
+      _U.list([A2($Html.h1,_U.list([]),_U.list([$Html.text("New Issue")])),A2(issueForm,address,model)]));
    });
    var init = {ifTitle: "",ifEmail: "",ifBody: "",ifPriority: "3",ifDeadline: $Maybe.Nothing};
    return _elm.NewIssue.values = {_op: _op
@@ -13608,14 +13609,14 @@ Elm.Main.make = function (_elm) {
               _U.list([$Html$Attributes.$class("navbar-header")]),
               _U.list([A2($Html.div,
               _U.list([$Html$Attributes.$class("navbar-brand")]),
-              _U.list([A2($Html.a,$Routes.linkAttrs($Routes.IssueListPage),_U.list([$Html.text("Hagemai")]))]))]))
+              _U.list([A2($Html.a,$Routes.linkAttrs($Routes.IssueListPage),_U.list([$Html.text("HAGEMAI")]))]))]))
               ,A2($Html.ul,
               _U.list([$Html$Attributes.$class("nav navbar-nav")]),
               _U.list([A2($Html.li,
               _U.list([]),
               _U.list([A2($Html.a,
               A2($Basics._op["++"],$Routes.linkAttrs($Routes.NewIssuePage),_U.list([$Html$Attributes.$class("btn btn-info navbar-btn")])),
-              _U.list([$Html.text("新規作成")]))]))]))]))]));
+              _U.list([$Html.text("Create")]))]))]))]))]));
    });
    var initialModel = {transitRouter: $TransitRouter.empty($Routes.EmptyRoute)
                       ,newIssueModel: $NewIssue.init

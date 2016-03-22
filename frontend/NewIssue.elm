@@ -76,7 +76,7 @@ update action model =
 view : Signal.Address Action -> Model -> Html
 view address model =
   div [class "container"] [
-        h1 [] [text "新規作成" ]
+        h1 [] [text "New Issue" ]
       , issueForm address model
       ]
 
@@ -86,7 +86,7 @@ issueForm address model =
     [ class "form-horizontal"]
     [ div
       [ class "form-group" ]
-      [ label [ class "col-sm-2 control-label" ] [ text "メールアドレス" ]
+      [ label [ class "col-sm-2 control-label" ] [ text "Email" ]
       , div
         [ class "col-sm-10" ]
         [ input
@@ -99,7 +99,7 @@ issueForm address model =
       ]
     , div
       [ class "form-group" ]
-      [ label [ class "col-sm-2 control-label" ] [ text "件名" ]
+      [ label [ class "col-sm-2 control-label" ] [ text "Titile" ]
       , div
         [ class "col-sm-10" ]
         [ input
@@ -112,7 +112,7 @@ issueForm address model =
       ]
     , div
       [ class "form-group"]
-      [ label [ class "col-sm-2 control-label" ] [ text "内容" ]
+      [ label [ class "col-sm-2 control-label" ] [ text "Body" ]
       , div
         [ class "col-sm-10" ]
         [ textarea
@@ -126,7 +126,7 @@ issueForm address model =
       ]
     , div
       [ class "form-group"]
-      [ label [ class "col-sm-2 control-label" ] [ text "優先度" ]
+      [ label [ class "col-sm-2 control-label" ] [ text "Priority" ]
       , div
         [ class "col-sm-10"
         , on "change" targetValue (\str -> Signal.message address (SetIssuePriority str))
@@ -142,7 +142,7 @@ issueForm address model =
       ]
     , div
       [ class "form-group"]
-      [ label [ class "col-sm-2 control-label" ] [ text "締切" ]
+      [ label [ class "col-sm-2 control-label" ] [ text "Deadline" ]
       , div
         [ class "col-sm-10" ]
         [ input
