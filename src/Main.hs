@@ -34,7 +34,8 @@ import           System.Directory               (getCurrentDirectory)
 type IssueAPI =
   Get '[JSON] [Issue.Issue]
   :<|> Capture "issueId" Integer :> Get '[JSON] (Issue.Issue, [Comment.Comment])
-  :<|> ReqBody '[JSON] Issue.IssueForm :> Post '[JSON] Integer
+  :<|> ReqBody '[JSON] Issue.IssueForm :> Post '[JSON] Issue.IssueId
+  :<|> Capture "issueId" Integer :> "comments" :> ReqBody '[JSON] Comment.CommentForm :> Post '[JSON] Issue.IssueId
 
 type API =
   "assets" :> Raw
@@ -57,8 +58,15 @@ assetsServer :: FilePath -> Server Raw
 assetsServer curDir = serveDirectory (curDir ++  "/static/")
 
 issuesServer :: Connection -> Server IssueAPI
-issuesServer conn = getIssues :<|> showIssue :<|> createIssue
+issuesServer conn = getIssues :<|> showIssue :<|> createIssue :<|> createComment
   where
+    getCurrentLocalTime :: E.EitherT ServantErr IO LocalTime
+    getCurrentLocalTime = do
+      let tz = hoursToTimeZone 9
+      ctu <- liftIO getCurrentTime
+      return $ utcToLocalTime tz ctu
+
+
     getIssues :: E.EitherT ServantErr IO [Issue.Issue]
     getIssues = liftIO $ runQuery conn (relationalQuery issues) ()
 
@@ -72,13 +80,11 @@ issuesServer conn = getIssues :<|> showIssue :<|> createIssue
           return (is, cs)
         _ -> E.left (err404 {errBody = "No issue with given id exists"})
 
-    createIssue :: Issue.IssueForm -> E.EitherT ServantErr IO Integer
+    createIssue :: Issue.IssueForm -> E.EitherT ServantErr IO Issue.IssueId
     createIssue issue = do
-      let tz = hoursToTimeZone 9
-      ctu <- liftIO getCurrentTime
-      let ct = utcToLocalTime tz ctu
-          is = toIssue (trace (show issue) issue) ct
-      liftIO $ withTransaction conn
+      ct <- getCurrentLocalTime
+      let is = Issue.issueFromForm ct issue
+      iid <- liftIO $ withTransaction conn
         (\c -> do
           _ <- runInsert c Issue.insertIssue is
           q <- runQuery c (unsafeTypedQuery "select LAST_INSERT_ID()") ()  :: IO [Integer]
@@ -87,8 +93,27 @@ issuesServer conn = getIssues :<|> showIssue :<|> createIssue
             [i] -> return i
             _ -> return 0
         )
-      where
-        toIssue issue ct = Issue.Issue 0 "hoge@example.com" (Issue.ifTitle issue) (Issue.ifBody issue) (Issue.ifPriority issue) (Issue.ifDeadline issue) 1 ct ct
+      return $ Issue.IssueId iid
+
+
+    createComment :: Integer -> Comment.CommentForm -> E.EitherT ServantErr IO Issue.IssueId
+    createComment issueId comment = do
+      ct <- getCurrentLocalTime
+      let cm = Comment.commentFromForm ct comment
+      iid <- liftIO $ withTransaction conn
+        (\c -> do
+          _ <- runInsert c Comment.insertComment cm
+          q <- runQuery c (unsafeTypedQuery "select LAST_INSERT_ID()") ()  :: IO [Integer]
+          case q of
+            [] -> return 0
+            [i] -> do
+              iss <- liftIO $ runQuery conn (relationalQuery $ issueById issueId) ()
+              return . fromIntegral $ Comment.issueId cm
+            _ -> return 0
+
+        )
+      return $ Issue.IssueId iid
+
 
 issues :: Relation () Issue.Issue
 issues = relation $ query Issue.issue

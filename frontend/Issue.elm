@@ -19,10 +19,23 @@ type alias Issue =
 
 type alias IssueForm =
   { ifTitle : String
+  , ifEmail : String
   , ifBody : String
   , ifPriority : String
   , ifDeadline : Maybe Date.Date               
   }
+
+type alias CommentForm =
+  { cfTitle : String
+  , cfEmail : String
+  , cfBody : String
+  , cfPriority : String
+  , cfState : Int
+  , cfDeadline : Maybe Date.Date
+  , cfIssueId : Int             
+  }
+
+type alias IssueId = { issId : Int }                     
 
 priorityToHtml : Int -> Html
 priorityToHtml i
@@ -33,3 +46,24 @@ priorityToHtml i
       4 -> div [class "label label-default"] [text "低"]
       _ -> text ""
 
+commentFormFromIssue : Issue -> CommentForm
+commentFormFromIssue is =
+  { cfTitle = is.title
+  , cfEmail = ""
+  , cfBody = ""
+  , cfPriority = toString is.priority
+  , cfState = is.state
+  , cfDeadline = is.deadline
+  , cfIssueId = is.id
+  }
+
+initCommentForm : CommentForm
+initCommentForm =
+  { cfTitle = ""
+  , cfEmail = ""
+  , cfBody = ""
+  , cfPriority = "3"
+  , cfState = 1
+  , cfDeadline = Nothing
+  , cfIssueId = 0
+  }    

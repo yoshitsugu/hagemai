@@ -9,20 +9,22 @@ import Routes
 import ServerApi exposing (..)
 import Date
 import Date.Format as DateFormat
+import Debug
 import String
 
 type alias Model = IssueForm
 
 init : Model
-init = {ifTitle = "", ifBody = "", ifPriority = "3", ifDeadline = Nothing}
+init = {ifTitle = "", ifEmail = "", ifBody = "", ifPriority = "3", ifDeadline = Nothing}
 
 type Action
   = PostIssue
   | SetIssueTitle (String)
+  | SetIssueEmail (String)
   | SetIssueBody (String)
   | SetIssuePriority (String)
   | SetIssueDeadline (String)
-  | HandleSaved (Maybe Int)
+  | HandleSaved (Maybe IssueId)
   | NoOp
 
 update : Action -> Model -> (Model, Effects Action)
@@ -33,6 +35,11 @@ update action model =
 
     SetIssueTitle txt ->
       ( {model | ifTitle = txt}
+      , Effects.none
+      )
+
+    SetIssueEmail txt ->
+      ( {model | ifEmail = txt}
       , Effects.none
       )
 
@@ -59,10 +66,10 @@ update action model =
     PostIssue -> ( model, createIssue model HandleSaved )
 
     HandleSaved id ->
-      case id of
+      case (Debug.log "id" id) of
         Just id' ->
           ( model
-          , Effects.map (\_ -> NoOp) (Routes.redirect (Routes.IssueDetailPage id'))
+          , Effects.map (\_ -> NoOp) (Routes.redirect (Routes.IssueDetailPage id'.issId))
           )
         Nothing -> (model,  Effects.map (\_ -> NoOp) (Routes.redirect Routes.IssueListPage))
 
@@ -78,6 +85,19 @@ issueForm address model =
   Html.form
     [ class "form-horizontal"]
     [ div
+      [ class "form-group" ]
+      [ label [ class "col-sm-2 control-label" ] [ text "メールアドレス" ]
+      , div
+        [ class "col-sm-10" ]
+        [ input
+          [ class "form-control"
+          , value model.ifEmail
+          , on "input" targetValue (\str -> Signal.message address (SetIssueEmail str))
+          ]
+          []
+        ]
+      ]
+    , div
       [ class "form-group" ]
       [ label [ class "col-sm-2 control-label" ] [ text "件名" ]
       , div

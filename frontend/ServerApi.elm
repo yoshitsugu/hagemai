@@ -52,36 +52,58 @@ issueDecoder =
     `apply` ("updatedAt" := JsonEx.date )
                     
 
-createIssue : IssueForm -> (Maybe Int -> b) -> Effects.Effects b
-createIssue issue action =              
+createIssue : IssueForm -> (Maybe IssueId -> b) -> Effects.Effects b
+createIssue issue action =
   Http.send Http.defaultSettings
      { verb = "POST"
      , url = baseUrl ++ "/issues"
-     , body = Http.string (Debug.log "ei" (encodeIssue issue))
+     , body = Http.string (encodeIssue issue)
      , headers = [("Content-Type", "application/json")]
     }
-  |> Http.fromJson Json.int
+  |> Http.fromJson issueIdDecoder
+  |> Debug.log "int" 
   |> Task.toMaybe
   |> Task.map action
   |> Effects.task
 
+issueIdDecoder : Json.Decoder IssueId
+issueIdDecoder = Json.object1 IssueId ("issId" := Json.int)
+                 
 encodeIssue : IssueForm -> String
 encodeIssue a =
   JsonE.encode 0 <|
     JsonE.object
-      [
-        ("ifTitle", JsonE.string a.ifTitle)
-        , ("ifBody", JsonE.string a.ifBody)
-        , ("ifPriority", case String.toInt a.ifPriority of
-                           Ok i -> JsonE.int i
-                           Err e -> JsonE.null
-          )
-        , ("ifDeadline", case a.ifDeadline of
-                           Just date -> (JsonE.string (DateFormat.format "%Y-%m-%d" date))
-                           Nothing -> JsonE.null)
-                                      
+      [ ("ifTitle", JsonE.string a.ifTitle)
+      , ("ifEmail", JsonE.string a.ifEmail)
+      , ("ifBody", JsonE.string a.ifBody)
+      , ("ifPriority", case String.toInt a.ifPriority of
+                         Ok i -> JsonE.int i
+                         Err e -> JsonE.null
+        )
+      , ("ifDeadline", case a.ifDeadline of
+                         Just date -> (JsonE.string (DateFormat.format "%Y-%m-%d" date))
+                         Nothing -> JsonE.null)
       ]
 
+
+encodeComment : CommentForm -> String
+encodeComment a =
+  JsonE.encode 0 <|
+    JsonE.object
+      [ ("cfTitle", JsonE.string a.cfTitle)
+      , ("cfEmail", JsonE.string a.cfEmail)
+      , ("cfBody", JsonE.string a.cfBody)
+      , ("cfState", JsonE.int a.cfState)
+      , ("cfPriority", case String.toInt a.cfPriority of
+                         Ok i -> JsonE.int i
+                         Err e -> JsonE.null
+        )
+      , ("cfDeadline", case a.cfDeadline of
+                         Just date -> (JsonE.string (DateFormat.format "%Y-%m-%d" date))
+                         Nothing -> JsonE.null)
+      , ("cfIssueId", JsonE.int a.cfIssueId)
+      ]
+    
 getIssueAndComments : Int -> (Maybe (Issue, (List Comment)) -> a) -> Effects.Effects a
 getIssueAndComments issueId action =
   Http.get issueAndComment (baseUrl ++ "/issues/" ++ (toString issueId))
@@ -100,3 +122,19 @@ commentDecoder =
 issueAndComment : Json.Decoder (Issue, (List Comment))
 issueAndComment =
   Json.tuple2 (,) issueDecoder (Json.list commentDecoder)
+
+
+createComment: CommentForm -> (Maybe IssueId -> b) -> Effects.Effects b
+createComment commentForm action =
+  Http.send Http.defaultSettings
+     { verb = "POST"
+     , url = baseUrl ++ "/issues/" ++ (toString commentForm.cfIssueId) ++ "/comments"
+     , body = Http.string (encodeComment commentForm)
+     , headers = [("Content-Type", "application/json")]
+    }
+  |> Http.fromJson issueIdDecoder
+  |> Debug.log "int" 
+  |> Task.toMaybe
+  |> Task.map action
+  |> Effects.task
+
