@@ -84,17 +84,14 @@ issuesServer conn = getIssues :<|> showIssue :<|> createIssue :<|> createComment
     createIssue issue = do
       ct <- getCurrentLocalTime
       let is = Issue.issueFromForm ct issue
-      iid <- liftIO $ withTransaction conn
-        (\c -> do
-          cmi <- runInsert c Issue.insertIssue is
-          q <- runQuery c (unsafeTypedQuery "select LAST_INSERT_ID()") ()  :: IO [Integer]
-          case q of
-            [] -> return 0
-            [i] -> return i
-            _ -> return 0
-        )
+      _ <- liftIO $ withTransaction conn (\c -> runInsert c Issue.insertIssue is)
+      q <- liftIO (runQuery conn (unsafeTypedQuery "select LAST_INSERT_ID()") ()  :: IO [Integer])
+      iid <- case q of
+        [i] -> do
+          liftIO $ withTransaction conn (\c -> runInsert c Comment.insertComment (Comment.fromIssue is i))
+          return (fromIntegral i)
+        _ -> return 0
       return $ Issue.IssueId iid
-
 
     createComment :: Integer -> Comment.CommentForm -> E.EitherT ServantErr IO Issue.IssueId
     createComment issueId comment = do
@@ -103,7 +100,6 @@ issuesServer conn = getIssues :<|> showIssue :<|> createIssue :<|> createComment
       _ <- liftIO $ withTransaction conn (\c -> runInsert c Comment.insertComment cm)
       q <- liftIO (runQuery conn (unsafeTypedQuery "select LAST_INSERT_ID()") ()  :: IO [Integer])
       case q of
-        [] -> return 0
         [i] -> liftIO $ withTransaction conn (\c -> liftIO $! runUpdate c (updateIssueByComment cm ct) ())
         _ -> return 0
       return . Issue.IssueId . fromIntegral $ Comment.issueId cm

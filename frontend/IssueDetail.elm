@@ -107,28 +107,14 @@ view address model =
   case model.issue of
     Just is -> div [class "container"] [
                    h1 [] [text ("#" ++ (toString is.id) ++ "  " ++ is.title)]
-                 , div [class "well well-sm"]
+                 , h3 [class ""]
                          [ priorityToHtml is.priority
                          , i [class "fa fa-fw fa-calendar-o"] []
                          , text (case is.deadline of
                                    Just date -> DateFormat.format "%Y/%m/%d" date
                                    Nothing -> "")
                          ]
-                 , div [class "panel panel-default"] 
-                     [ div [class "panel-heading", id "1"]
-                           [ a [href "#1"] [text "1"]
-                           , text " "
-                           , span [title "From"]
-                               [ i [class "fa fa-fw fa-envelope-o"] []
-                               , text (is.email ++ " ")
-                               ]
-                           , span [title "Submitted At"]
-                               [ i [class "fa fa-fw fa-clock-o"] []
-                               , text (DateFormat.format "%Y/%m/%d %H:%M" is.createdAt)
-                               ]
-                           ]
-                     , div [class "panel-body"] (nl2br is.body)
-                     ]
+                 , hr [] []
                  , div [class "comments"] (List.map commentPanel (indexedMap (,) model.comments))
                  , br [] []
                  , h3 [] [text "Add Comment"]
@@ -138,7 +124,7 @@ view address model =
 
 commentPanel : (Int, Comment) -> Html
 commentPanel (index, comment) =
-  let ind = toString (index + 2) in
+  let ind = toString (index + 1) in
   div [class "panel panel-default", id ind] [
        div [class "panel-heading"]
            [ a [href ("#" ++ ind)] [text ind]

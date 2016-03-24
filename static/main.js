@@ -12765,9 +12765,18 @@ Elm.Issue.make = function (_elm) {
    var commentFormFromIssue = function (is) {
       return {cfTitle: is.title,cfEmail: "",cfBody: "",cfPriority: $Basics.toString(is.priority),cfState: is.state,cfDeadline: is.deadline,cfIssueId: is.id};
    };
-   var priorityToHtml = function (i) {
+   var pastPriorityToHtml = function (i) {
       var _p0 = i;
       switch (_p0)
+      {case 1: return A2($Html.div,_U.list([$Html$Attributes.$class("label label-default")]),_U.list([$Html.text("緊急")]));
+         case 2: return A2($Html.div,_U.list([$Html$Attributes.$class("label label-default")]),_U.list([$Html.text("高")]));
+         case 3: return A2($Html.div,_U.list([$Html$Attributes.$class("label label-default")]),_U.list([$Html.text("中")]));
+         case 4: return A2($Html.div,_U.list([$Html$Attributes.$class("label label-default")]),_U.list([$Html.text("低")]));
+         default: return $Html.text("");}
+   };
+   var priorityToHtml = function (i) {
+      var _p1 = i;
+      switch (_p1)
       {case 1: return A2($Html.div,_U.list([$Html$Attributes.$class("label label-danger")]),_U.list([$Html.text("緊急")]));
          case 2: return A2($Html.div,_U.list([$Html$Attributes.$class("label label-warning")]),_U.list([$Html.text("高")]));
          case 3: return A2($Html.div,_U.list([$Html$Attributes.$class("label label-info")]),_U.list([$Html.text("中")]));
@@ -12784,6 +12793,7 @@ Elm.Issue.make = function (_elm) {
                               ,CommentForm: CommentForm
                               ,IssueId: IssueId
                               ,priorityToHtml: priorityToHtml
+                              ,pastPriorityToHtml: pastPriorityToHtml
                               ,commentFormFromIssue: commentFormFromIssue
                               ,initCommentForm: initCommentForm};
 };
@@ -13058,7 +13068,7 @@ Elm.IssueDetail.make = function (_elm) {
    var commentPanel = function (_p0) {
       var _p1 = _p0;
       var _p2 = _p1._1;
-      var ind = $Basics.toString(_p1._0 + 2);
+      var ind = $Basics.toString(_p1._0 + 1);
       return A2($Html.div,
       _U.list([$Html$Attributes.$class("panel panel-default"),$Html$Attributes.id(ind)]),
       _U.list([A2($Html.div,
@@ -13196,8 +13206,8 @@ Elm.IssueDetail.make = function (_elm) {
             _U.list([A2($Html.h1,
                     _U.list([]),
                     _U.list([$Html.text(A2($Basics._op["++"],"#",A2($Basics._op["++"],$Basics.toString(_p6.id),A2($Basics._op["++"],"  ",_p6.title))))]))
-                    ,A2($Html.div,
-                    _U.list([$Html$Attributes.$class("well well-sm")]),
+                    ,A2($Html.h3,
+                    _U.list([$Html$Attributes.$class("")]),
                     _U.list([$Issue.priorityToHtml(_p6.priority)
                             ,A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-calendar-o")]),_U.list([]))
                             ,$Html.text(function () {
@@ -13208,21 +13218,7 @@ Elm.IssueDetail.make = function (_elm) {
                                      return "";
                                   }
                             }())]))
-                    ,A2($Html.div,
-                    _U.list([$Html$Attributes.$class("panel panel-default")]),
-                    _U.list([A2($Html.div,
-                            _U.list([$Html$Attributes.$class("panel-heading"),$Html$Attributes.id("1")]),
-                            _U.list([A2($Html.a,_U.list([$Html$Attributes.href("#1")]),_U.list([$Html.text("1")]))
-                                    ,$Html.text(" ")
-                                    ,A2($Html.span,
-                                    _U.list([$Html$Attributes.title("From")]),
-                                    _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-envelope-o")]),_U.list([]))
-                                            ,$Html.text(A2($Basics._op["++"],_p6.email," "))]))
-                                    ,A2($Html.span,
-                                    _U.list([$Html$Attributes.title("Submitted At")]),
-                                    _U.list([A2($Html.i,_U.list([$Html$Attributes.$class("fa fa-fw fa-clock-o")]),_U.list([]))
-                                            ,$Html.text(A2($Date$Format.format,"%Y/%m/%d %H:%M",_p6.createdAt))]))]))
-                            ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),$Util.nl2br(_p6.body))]))
+                    ,A2($Html.hr,_U.list([]),_U.list([]))
                     ,A2($Html.div,
                     _U.list([$Html$Attributes.$class("comments")]),
                     A2($List.map,commentPanel,A2($List.indexedMap,F2(function (v0,v1) {    return {ctor: "_Tuple2",_0: v0,_1: v1};}),model.comments)))

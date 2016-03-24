@@ -46,6 +46,15 @@ priorityToHtml i
       4 -> div [class "label label-default"] [text "低"]
       _ -> text ""
 
+pastPriorityToHtml : Int -> Html
+pastPriorityToHtml i
+  = case i of
+      1 -> div [class "label label-default"] [text "緊急"]
+      2 -> div [class "label label-default"] [text "高"]
+      3 -> div [class "label label-default"] [text "中"]
+      4 -> div [class "label label-default"] [text "低"]
+      _ -> text ""
+           
 commentFormFromIssue : Issue -> CommentForm
 commentFormFromIssue is =
   { cfTitle = is.title
