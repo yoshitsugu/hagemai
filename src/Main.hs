@@ -15,10 +15,10 @@ import           Data.Text
 import           Data.Time.Clock                (getCurrentTime)
 import           Data.Time.LocalTime
 import           Database.HDBC                  (withTransaction)
-import           Database.HDBC.Record           (runInsert, runQuery)
+import           Database.HDBC.Record           (runInsert, runQuery, runUpdate)
 import           Database.Relational.Query
 import qualified Database.Relational.Query      as Q ((!))
-import           Database.Relational.Query.Type (unsafeTypedQuery)
+import           Database.Relational.Query.Type (Update (..), unsafeTypedQuery)
 import           DataSource                     (Connection, connect)
 import           Debug.Trace
 import           GHC.Generics
@@ -86,7 +86,7 @@ issuesServer conn = getIssues :<|> showIssue :<|> createIssue :<|> createComment
       let is = Issue.issueFromForm ct issue
       iid <- liftIO $ withTransaction conn
         (\c -> do
-          _ <- runInsert c Issue.insertIssue is
+          cmi <- runInsert c Issue.insertIssue is
           q <- runQuery c (unsafeTypedQuery "select LAST_INSERT_ID()") ()  :: IO [Integer]
           case q of
             [] -> return 0
@@ -100,19 +100,13 @@ issuesServer conn = getIssues :<|> showIssue :<|> createIssue :<|> createComment
     createComment issueId comment = do
       ct <- getCurrentLocalTime
       let cm = Comment.commentFromForm ct comment
-      iid <- liftIO $ withTransaction conn
-        (\c -> do
-          _ <- runInsert c Comment.insertComment cm
-          q <- runQuery c (unsafeTypedQuery "select LAST_INSERT_ID()") ()  :: IO [Integer]
-          case q of
-            [] -> return 0
-            [i] -> do
-              iss <- liftIO $ runQuery conn (relationalQuery $ issueById issueId) ()
-              return . fromIntegral $ Comment.issueId cm
-            _ -> return 0
-
-        )
-      return $ Issue.IssueId iid
+      _ <- liftIO $ withTransaction conn (\c -> runInsert c Comment.insertComment cm)
+      q <- liftIO (runQuery conn (unsafeTypedQuery "select LAST_INSERT_ID()") ()  :: IO [Integer])
+      case q of
+        [] -> return 0
+        [i] -> liftIO $ withTransaction conn (\c -> liftIO $! runUpdate c (updateIssueByComment cm ct) ())
+        _ -> return 0
+      return . Issue.IssueId . fromIntegral $ Comment.issueId cm
 
 
 issues :: Relation () Issue.Issue
@@ -133,6 +127,14 @@ commentsByIssueId id = relation $ do
   asc $ c Q.! Comment.createdAt'
   pure c
 
+updateIssueByComment :: Comment.Comment -> LocalTime -> Update ()
+updateIssueByComment cm ct = typedUpdate Issue.tableOfIssue . updateTarget $ \proj -> do
+  Issue.title' <-# value (Comment.title cm)
+  Issue.deadline' <-# value (Comment.deadline cm)
+  Issue.priority' <-# value (Comment.priority cm)
+  Issue.state' <-# value (Comment.state cm)
+  Issue.updatedAt' <-# value ct
+  wheres $ proj Q.! Issue.id' .=. value (Comment.issueId cm)
 
 main :: IO ()
 main = do
