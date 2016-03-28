@@ -12911,16 +12911,14 @@ Elm.ServerApi.make = function (_elm) {
    var createIssue = F2(function (issue,action) {
       return $Effects.task(A2($Task.map,
       action,
-      $Task.toMaybe(A2($Debug.log,
-      "int",
-      A2($Http.fromJson,
+      $Task.toMaybe(A2($Http.fromJson,
       issueIdDecoder,
       A2($Http.send,
       $Http.defaultSettings,
       {verb: "POST"
       ,url: A2($Basics._op["++"],baseUrl,"/issues")
       ,body: $Http.string(encodeIssue(issue))
-      ,headers: _U.list([{ctor: "_Tuple2",_0: "Content-Type",_1: "application/json"}])}))))));
+      ,headers: _U.list([{ctor: "_Tuple2",_0: "Content-Type",_1: "application/json"}])})))));
    });
    var getIssueAndComments = F2(function (issueId,action) {
       return $Effects.task(A2($Task.map,
@@ -12930,16 +12928,14 @@ Elm.ServerApi.make = function (_elm) {
    var createComment = F2(function (commentForm,action) {
       return $Effects.task(A2($Task.map,
       action,
-      $Task.toMaybe(A2($Debug.log,
-      "int",
-      A2($Http.fromJson,
+      $Task.toMaybe(A2($Http.fromJson,
       issueIdDecoder,
       A2($Http.send,
       $Http.defaultSettings,
       {verb: "POST"
       ,url: A2($Basics._op["++"],baseUrl,A2($Basics._op["++"],"/issues/",A2($Basics._op["++"],$Basics.toString(commentForm.cfIssueId),"/comments")))
       ,body: $Http.string(encodeComment(commentForm))
-      ,headers: _U.list([{ctor: "_Tuple2",_0: "Content-Type",_1: "application/json"}])}))))));
+      ,headers: _U.list([{ctor: "_Tuple2",_0: "Content-Type",_1: "application/json"}])})))));
    });
    return _elm.ServerApi.values = {_op: _op
                                   ,baseUrl: baseUrl
@@ -12997,7 +12993,7 @@ Elm.Routes.make = function (_elm) {
                      {stopPropagation: true,preventDefault: true},
                      $Json$Decode.value,
                      function (_p2) {
-                        return A2($Signal.message,$TransitRouter.pushPathAddress,A2($Debug.log,"string",path));
+                        return A2($Signal.message,$TransitRouter.pushPathAddress,path);
                      })]);
    };
    var EmptyRoute = {ctor: "EmptyRoute"};
@@ -13086,7 +13082,7 @@ Elm.IssueDetail.make = function (_elm) {
               ,A2($Html.div,_U.list([$Html$Attributes.$class("panel-body")]),$Util.nl2br(_p2.body))]));
    };
    var NoOp = {ctor: "NoOp"};
-   var HandleSaved = function (a) {    return {ctor: "HandleSaved",_0: a};};
+   var HandleSavedComment = function (a) {    return {ctor: "HandleSavedComment",_0: a};};
    var SetCommentDeadline = function (a) {    return {ctor: "SetCommentDeadline",_0: a};};
    var SetCommentPriority = function (a) {    return {ctor: "SetCommentPriority",_0: a};};
    var SetCommentBody = function (a) {    return {ctor: "SetCommentBody",_0: a};};
@@ -13271,7 +13267,7 @@ Elm.IssueDetail.make = function (_elm) {
                  } else return $Maybe.Nothing;
            }()});
            return {ctor: "_Tuple2",_0: _U.update(model,{newComment: nc$}),_1: $Effects.none};
-         case "PostComment": return {ctor: "_Tuple2",_0: model,_1: A2($ServerApi.createComment,model.newComment,HandleSaved)};
+         case "PostComment": return {ctor: "_Tuple2",_0: model,_1: A2($ServerApi.createComment,model.newComment,HandleSavedComment)};
          default: var _p12 = _p7._0;
            if (_p12.ctor === "Just") {
                  return {ctor: "_Tuple2"
@@ -13293,7 +13289,7 @@ Elm.IssueDetail.make = function (_elm) {
                                     ,SetCommentBody: SetCommentBody
                                     ,SetCommentPriority: SetCommentPriority
                                     ,SetCommentDeadline: SetCommentDeadline
-                                    ,HandleSaved: HandleSaved
+                                    ,HandleSavedComment: HandleSavedComment
                                     ,NoOp: NoOp
                                     ,init: init
                                     ,update: update
@@ -13395,6 +13391,7 @@ Elm.NewIssue.make = function (_elm) {
    $Html$Attributes = Elm.Html.Attributes.make(_elm),
    $Html$Events = Elm.Html.Events.make(_elm),
    $Issue = Elm.Issue.make(_elm),
+   $Json$Decode = Elm.Json.Decode.make(_elm),
    $List = Elm.List.make(_elm),
    $Maybe = Elm.Maybe.make(_elm),
    $Result = Elm.Result.make(_elm),
@@ -13428,13 +13425,13 @@ Elm.NewIssue.make = function (_elm) {
                   }()})
                   ,_1: $Effects.none};
          case "PostIssue": return {ctor: "_Tuple2",_0: model,_1: A2($ServerApi.createIssue,model,HandleSaved)};
-         default: var _p3 = A2($Debug.log,"id",_p0._0);
+         default: var _p3 = _p0._0;
            if (_p3.ctor === "Just") {
                  return {ctor: "_Tuple2"
                         ,_0: model
                         ,_1: A2($Effects.map,function (_p4) {    return NoOp;},$Routes.redirect($Routes.IssueDetailPage(_p3._0.issId)))};
               } else {
-                 return {ctor: "_Tuple2",_0: model,_1: A2($Effects.map,function (_p5) {    return NoOp;},$Routes.redirect($Routes.IssueListPage))};
+                 return _U.crashCase("NewIssue",{start: {line: 70,column: 7},end: {line: 75,column: 73}},_p3)("Save failed... we\'re not handling it...");
               }}
    });
    var SetIssueDeadline = function (a) {    return {ctor: "SetIssueDeadline",_0: a};};
@@ -13543,8 +13540,17 @@ Elm.NewIssue.make = function (_elm) {
               ,A2($Html.div,
               _U.list([$Html$Attributes.$class("form-group")]),
               _U.list([A2($Html.div,
-              _U.list([$Html$Attributes.$class("col-sm-10 col-sm-offset-2"),A2($Html$Events.onClick,address,PostIssue)]),
-              _U.list([A2($Html.button,_U.list([$Html$Attributes.$class("btn btn-primary btn-block")]),_U.list([$Html.text("Submit")]))]))]))]));
+              _U.list([$Html$Attributes.$class("col-sm-10 col-sm-offset-2")]),
+              _U.list([A2($Html.button,
+              _U.list([$Html$Attributes.$class("btn btn-block btn-primary")
+                      ,A4($Html$Events.onWithOptions,
+                      "click",
+                      {stopPropagation: true,preventDefault: true},
+                      $Json$Decode.value,
+                      function (_p7) {
+                         return A2($Signal.message,address,A2($Debug.log,"submit",PostIssue));
+                      })]),
+              _U.list([$Html.text("Save")]))]))]))]));
    });
    var view = F2(function (address,model) {
       return A2($Html.div,

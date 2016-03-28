@@ -3,7 +3,7 @@ module NewIssue (..) where
 import Effects exposing (Effects, Never)
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (on, targetValue, onClick)
+import Html.Events exposing (on, targetValue, onClick, onWithOptions)
 import Issue exposing (..)
 import Routes 
 import ServerApi exposing (..)
@@ -11,6 +11,7 @@ import Date
 import Date.Format as DateFormat
 import Debug
 import String
+import Json.Decode as Json
 
 type alias Model = IssueForm
 
@@ -53,25 +54,26 @@ update action model =
       , Effects.none
       )
 
-    SetIssueDeadline txt ->
+    SetIssueDeadline txt -> 
       ( {model | ifDeadline = if (String.length txt) > 0
            then (case Date.fromString txt of
              Ok d -> Just d
              Err err -> Nothing
            )
            else Nothing }
-      , Effects.none
+      ,  Effects.none
       )
 
     PostIssue -> ( model, createIssue model HandleSaved )
 
-    HandleSaved id ->
-      case (Debug.log "id" id) of
-        Just id' ->
+    HandleSaved maybeId ->
+      case maybeId of
+        Just justId ->
           ( model
-          , Effects.map (\_ -> NoOp) (Routes.redirect (Routes.IssueDetailPage id'.issId))
+          , Effects.map (\_ -> NoOp) (Routes.redirect (Routes.IssueDetailPage justId.issId))
           )
-        Nothing -> (model,  Effects.map (\_ -> NoOp) (Routes.redirect Routes.IssueListPage))
+        Nothing -> Debug.crash "Save failed... we're not handling it..."
+
 
 view : Signal.Address Action -> Model -> Html
 view address model =
@@ -159,10 +161,17 @@ issueForm address model =
     , div
       [ class "form-group"]
       [ div
-         [ class "col-sm-10 col-sm-offset-2"
-         , onClick address PostIssue
+         [ class "col-sm-10 col-sm-offset-2"]
+         [ button
+            [ class "btn btn-block btn-primary"
+            , onWithOptions
+              "click"
+              { stopPropagation = True, preventDefault = True }
+              Json.value
+              (\_ -> Signal.message address (Debug.log "submit" PostIssue))
+            ]
+            [ text "Save" ]
          ]
-         [ button [ class "btn btn-primary btn-block" ] [ text "Submit" ] ]
       ]
     ]
       

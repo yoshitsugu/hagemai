@@ -26,7 +26,7 @@ type Action
   | SetCommentBody (String)
   | SetCommentPriority (String)
   | SetCommentDeadline (String)
-  | HandleSaved (Maybe IssueId)
+  | HandleSavedComment (Maybe IssueId)
   | NoOp
 
 init : Model
@@ -91,9 +91,9 @@ update action model =
       , Effects.none
       )
 
-    PostComment -> ( model, createComment model.newComment HandleSaved )
+    PostComment -> ( model, createComment model.newComment HandleSavedComment )
 
-    HandleSaved id ->
+    HandleSavedComment id ->
       case id of
         Just id' ->
           ( model

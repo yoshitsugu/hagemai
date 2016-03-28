@@ -61,7 +61,6 @@ createIssue issue action =
      , headers = [("Content-Type", "application/json")]
     }
   |> Http.fromJson issueIdDecoder
-  |> Debug.log "int" 
   |> Task.toMaybe
   |> Task.map action
   |> Effects.task
@@ -133,7 +132,6 @@ createComment commentForm action =
      , headers = [("Content-Type", "application/json")]
     }
   |> Http.fromJson issueIdDecoder
-  |> Debug.log "int" 
   |> Task.toMaybe
   |> Task.map action
   |> Effects.task

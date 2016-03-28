@@ -8,7 +8,6 @@ import Signal
 import Effects exposing (Effects, Never)
 import TransitRouter
 import RouteParser exposing (..)
-import Debug exposing (log)
 
 type Route
   = NewIssuePage
@@ -57,5 +56,5 @@ linkAttrs route =
         "click"
         { stopPropagation = True, preventDefault = True }
         Json.value
-        (\_ ->  Signal.message TransitRouter.pushPathAddress (log "string" path))
+        (\_ ->  Signal.message TransitRouter.pushPathAddress path)
     ]
