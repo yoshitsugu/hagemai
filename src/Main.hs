@@ -47,9 +47,9 @@ type API =
 api :: Proxy API
 api = Proxy
 
-app :: Connection -> FilePath -> Application
-app conn curDir = serve api $ assetsServer curDir
-                            :<|> issuesServer conn
+app :: FilePath -> Application
+app curDir = serve api $ assetsServer curDir
+                            :<|> issuesServer
                             :<|> return IndexPage
                             :<|> return IndexPage
                             :<|> (\_ -> return IndexPage)
@@ -57,8 +57,8 @@ app conn curDir = serve api $ assetsServer curDir
 assetsServer :: FilePath -> Server Raw
 assetsServer curDir = serveDirectory (curDir ++  "/static/")
 
-issuesServer :: Connection -> Server IssueAPI
-issuesServer conn = getIssues :<|> showIssue :<|> createIssue :<|> createComment
+issuesServer :: Server IssueAPI
+issuesServer = getIssues :<|> showIssue :<|> createIssue :<|> createComment
   where
     getCurrentLocalTime :: E.EitherT ServantErr IO LocalTime
     getCurrentLocalTime = do
@@ -68,10 +68,13 @@ issuesServer conn = getIssues :<|> showIssue :<|> createIssue :<|> createComment
 
 
     getIssues :: E.EitherT ServantErr IO [Issue.Issue]
-    getIssues = liftIO $ runQuery conn (relationalQuery issues) ()
+    getIssues = do
+      conn <- liftIO connect
+      liftIO $ runQuery conn (relationalQuery issues) ()
 
     showIssue :: Integer -> E.EitherT ServantErr IO (Issue.Issue, [Comment.Comment])
     showIssue issueId = do
+      conn <- liftIO connect
       r <- liftIO $ runQuery conn (relationalQuery (issueById issueId)) ()
       case r of
         [] -> E.left (err404 {errBody = "No issue with given id exists"})
@@ -82,6 +85,7 @@ issuesServer conn = getIssues :<|> showIssue :<|> createIssue :<|> createComment
 
     createIssue :: Issue.IssueForm -> E.EitherT ServantErr IO Issue.IssueId
     createIssue issue = do
+      conn <- liftIO connect
       ct <- getCurrentLocalTime
       let is = Issue.issueFromForm ct issue
       _ <- liftIO $ withTransaction conn (\c -> runInsert c Issue.insertIssue is)
@@ -95,6 +99,7 @@ issuesServer conn = getIssues :<|> showIssue :<|> createIssue :<|> createComment
 
     createComment :: Integer -> Comment.CommentForm -> E.EitherT ServantErr IO Issue.IssueId
     createComment issueId comment = do
+      conn <- liftIO connect
       ct <- getCurrentLocalTime
       let cm = Comment.commentFromForm ct comment
       _ <- liftIO $ withTransaction conn (\c -> runInsert c Comment.insertComment cm)
@@ -134,6 +139,5 @@ updateIssueByComment cm ct = typedUpdate Issue.tableOfIssue . updateTarget $ \pr
 
 main :: IO ()
 main = do
-  conn <- connect
   curDir <- getCurrentDirectory
-  run 8081 $ app conn curDir
+  run 8081 $ app curDir
